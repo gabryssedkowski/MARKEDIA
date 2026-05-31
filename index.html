@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Markedia - projekty graficzne, branding, materialy do druku i grafiki social media, ktore pomagaja firmom wygladac profesjonalnie."
+    />
+    <title>Markedia - grafika, ktora sprzedaje</title>
+    <link rel="icon" href="assets/MARKEDIA-LOGO.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Urbanist:wght@400;500;600;700;800;900&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="is-loading">
+    <div class="loader" aria-hidden="true">
+      <img src="assets/MARKEDIA-LOGO-WHITE.svg" alt="" />
+      <div class="loader__bar"><span></span></div>
+    </div>
+
+    <div class="cursor-light" aria-hidden="true"></div>
+    <div class="site-noise" aria-hidden="true"></div>
+    <canvas class="motion-field" aria-hidden="true"></canvas>
+    <div class="scroll-progress" aria-hidden="true"><span></span></div>
+
+    <header class="site-header" data-header>
+      <a class="brand" href="#top" aria-label="Markedia - strona glowna">
+        <img src="assets/MARKEDIA-LOGO.svg" alt="Markedia" />
+      </a>
+      <nav class="nav" id="site-nav" aria-label="Nawigacja glowna">
+        <a href="#uslugi">Usługi</a>
+        <a href="baner.html">Zamów</a>
+        <a href="#realizacje">Realizacje</a>
+        <a href="#proces">Proces</a>
+        <a href="#kontakt">Kontakt</a>
+      </nav>
+      <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Otworz menu">
+        <i data-lucide="menu" aria-hidden="true"></i>
+      </button>
+      <a class="icon-button" href="tel:+48732139599" aria-label="Zadzwon do Markedia">
+        <i data-lucide="phone-call" aria-hidden="true"></i>
+      </a>
+    </header>
+
+    <aside class="quick-actions" aria-label="Szybki kontakt">
+      <a href="mailto:markediapl@gmail.com" aria-label="Napisz email">
+        <i data-lucide="mail" aria-hidden="true"></i>
+      </a>
+      <a href="tel:+48732139599" aria-label="Zadzwon">
+        <i data-lucide="phone" aria-hidden="true"></i>
+      </a>
+      <a href="#kontakt" aria-label="Przejdz do formularza">
+        <i data-lucide="message-circle" aria-hidden="true"></i>
+      </a>
+    </aside>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero__background" aria-hidden="true">
+          <img class="hero__brandscape" src="assets/BRANDING.png" alt="" data-depth="-0.08" />
+          <div class="hero__grid"></div>
+          <div class="hero__scan"></div>
+        </div>
+
+        <div class="hero__content">
+          <p class="eyebrow reveal">Indywidualne projekty dla firm</p>
+          <h1 id="hero-title" class="reveal">
+            Grafika, która
+            <span class="word-rotator" aria-live="polite">
+              <b>sprzedaje</b>
+              <b>zatrzymuje wzrok</b>
+              <b>buduje zaufanie</b>
+            </span>
+            <span>nie tylko wygląda</span>
+          </h1>
+          <p class="hero__lead reveal">
+            Markedia tworzy branding, materiały do druku i grafiki social media,
+            które od pierwszego spojrzenia mówią: ta marka wie, co robi.
+          </p>
+          <div class="hero__actions reveal">
+            <a class="btn btn--primary magnetic" href="mailto:markediapl@gmail.com?subject=Chce%20zamowic%20projekt%20w%20Markedia">
+              <i data-lucide="send" aria-hidden="true"></i>
+              <span>Zamów projekt</span>
+            </a>
+            <a class="btn btn--ghost magnetic" href="baner.html">
+              <i data-lucide="panel-top" aria-hidden="true"></i>
+              <span>Konfiguruj baner</span>
+            </a>
+            <a class="btn btn--ghost magnetic" href="#realizacje">
+              <i data-lucide="sparkles" aria-hidden="true"></i>
+              <span>Zobacz realizacje</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="hero__visual" aria-hidden="true">
+          <div class="live-brief">
+            <div class="live-brief__top">
+              <span>Live brief</span>
+              <i></i>
+            </div>
+            <div class="live-brief__rows">
+              <span style="--w: 74%"></span>
+              <span style="--w: 52%"></span>
+              <span style="--w: 88%"></span>
+            </div>
+            <div class="live-brief__status">projektowanie...</div>
+          </div>
+          <div class="badge-ring">
+            <span>Branding</span>
+            <span>Print</span>
+            <span>Social</span>
+          </div>
+          <img class="mascot" src="assets/asdad-e1774390269512.png" alt="" data-depth="0.12" />
+          <img class="circle-mark" src="assets/Circle-img-bg-home.png" alt="" data-depth="0.2" />
+          <div class="chat-pop chat-pop--one">brief przyjęty</div>
+          <div class="chat-pop chat-pop--two">projekt w ruchu</div>
+        </div>
+
+        <a class="scroll-cue" href="#uslugi" aria-label="Przewin do uslug">
+          <i data-lucide="arrow-down" aria-hidden="true"></i>
+        </a>
+      </section>
+
+      <section class="ticker" aria-label="Zakres projektow">
+        <div class="ticker__track">
+          <span>Branding</span>
+          <span>Logo</span>
+          <span>Social media</span>
+          <span>Ulotki</span>
+          <span>Wizytówki</span>
+          <span>Roll-upy</span>
+          <span>Bannery</span>
+          <span>Reklamy</span>
+          <span>Identyfikacja</span>
+          <span>Branding</span>
+          <span>Logo</span>
+          <span>Social media</span>
+          <span>Ulotki</span>
+          <span>Wizytówki</span>
+          <span>Roll-upy</span>
+          <span>Bannery</span>
+          <span>Reklamy</span>
+          <span>Identyfikacja</span>
+        </div>
+      </section>
+
+      <section class="proof-strip reveal" aria-label="Najwazniejsze liczby">
+        <div>
+          <strong data-count="48">0</strong>
+          <span>godzin do pierwszej koncepcji</span>
+        </div>
+        <div>
+          <strong data-count="360">0</strong>
+          <span>stopni opieki nad wizualem</span>
+        </div>
+        <div>
+          <strong data-count="100">0</strong>
+          <span>procent przygotowania pod publikacje</span>
+        </div>
+      </section>
+
+      <section class="section outcomes" aria-labelledby="outcomes-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Efekt końcowy</p>
+          <h2 id="outcomes-title">Nie tylko plik. Dostajesz system, który da się od razu wrzucić w obieg.</h2>
+        </div>
+        <div class="outcome-stack">
+          <article class="outcome-card reveal" data-outcome>
+            <span>01</span>
+            <h3>Wersje pod kanały</h3>
+            <p>Formaty pod druk, posty, relacje, reklamy i użycie wewnętrzne, bez ręcznego przycinania po fakcie.</p>
+          </article>
+          <article class="outcome-card reveal" data-outcome>
+            <span>02</span>
+            <h3>Jasna hierarchia</h3>
+            <p>Odbiorca wie, gdzie patrzeć, co jest najważniejsze i jaki kolejny krok ma wykonać.</p>
+          </article>
+          <article class="outcome-card reveal" data-outcome>
+            <span>03</span>
+            <h3>Spójny styl marki</h3>
+            <p>Kolory, typografia, rytm i detale nie walczą ze sobą, tylko pracują na rozpoznawalność.</p>
+          </article>
+          <article class="outcome-card reveal" data-outcome>
+            <span>04</span>
+            <h3>Gotowe eksporty</h3>
+            <p>Otrzymujesz paczkę plików przygotowaną tak, żeby wdrożenie było szybkie i bez nerwów.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="logo-strip" aria-label="Wybrane marki i realizacje">
+        <span>Projekty wizualne dla marek, kampanii i materiałów sprzedażowych</span>
+        <div>
+          <img src="assets/FUNDACJA-SILESIA.svg" alt="Fundacja Silesia" />
+          <img src="assets/SPAPSA-LOGO_3-01.png" alt="SPAPSA" />
+          <img src="assets/500x500-logo-150x150.png" alt="Logo klienta" />
+          <img src="assets/Zasob-2.svg" alt="Logo klienta" />
+        </div>
+      </section>
+
+      <section class="case-rail" aria-label="Szybki przeglad realizacji">
+        <div class="case-rail__track">
+          <article>
+            <img src="assets/BRANDING.png" alt="Branding Markedia" />
+            <span>Branding system</span>
+          </article>
+          <article>
+            <img src="assets/WIZYTOWKI-b-scaled.png" alt="Wizytowki Markedia" />
+            <span>Materiały premium</span>
+          </article>
+          <article>
+            <img src="assets/Zasob-5-1-1.png" alt="Projekt social media" />
+            <span>Social campaign</span>
+          </article>
+          <article>
+            <img src="assets/3D-MARKEDIA.png" alt="Logo 3D Markedia" />
+            <span>3D mark</span>
+          </article>
+          <article>
+            <img src="assets/BRANDING.png" alt="Branding Markedia" />
+            <span>Branding system</span>
+          </article>
+          <article>
+            <img src="assets/WIZYTOWKI-b-scaled.png" alt="Wizytowki Markedia" />
+            <span>Materiały premium</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="section services" id="uslugi" aria-labelledby="services-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Co projektujemy</p>
+          <h2 id="services-title">Materiały, które robią robotę zanim padnie pierwsze zdanie.</h2>
+        </div>
+        <div class="service-tabs reveal" aria-label="Szybki wybor uslugi">
+          <button type="button" class="is-active" data-service-tab="print">
+            <i data-lucide="printer" aria-hidden="true"></i>
+            <span>Druk</span>
+          </button>
+          <button type="button" data-service-tab="social">
+            <i data-lucide="megaphone" aria-hidden="true"></i>
+            <span>Social</span>
+          </button>
+          <button type="button" data-service-tab="brand">
+            <i data-lucide="badge-check" aria-hidden="true"></i>
+            <span>Brand</span>
+          </button>
+        </div>
+        <div class="service-preview reveal" data-service-preview>
+          <div>
+            <span>aktywny pakiet</span>
+            <h3>Materiały do druku</h3>
+            <p>Wizytówki, ulotki, plakaty i bannery gotowe pod produkcję, z mocnym komunikatem i czystym eksportem.</p>
+          </div>
+          <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+        </div>
+        <div class="service-grid">
+          <article class="service-card reveal tilt-card">
+            <div class="service-card__icon"><i data-lucide="printer" aria-hidden="true"></i></div>
+            <h3>Materiały do druku</h3>
+            <p>Ulotki, wizytówki, plakaty, roll-upy i bannery przygotowane tak, żeby drukarnia nie miała pytań.</p>
+            <a href="mailto:markediapl@gmail.com?subject=Materialy%20do%20druku" aria-label="Zapytaj o materialy do druku">
+              <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+            </a>
+          </article>
+          <article class="service-card reveal tilt-card">
+            <div class="service-card__icon"><i data-lucide="megaphone" aria-hidden="true"></i></div>
+            <h3>Social media</h3>
+            <p>Posty, relacje, reklamy i zestawy grafik, które utrzymują spójny styl i zatrzymują scrollowanie.</p>
+            <a href="mailto:markediapl@gmail.com?subject=Grafiki%20social%20media" aria-label="Zapytaj o grafiki social media">
+              <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+            </a>
+          </article>
+          <article class="service-card reveal tilt-card">
+            <div class="service-card__icon"><i data-lucide="badge-check" aria-hidden="true"></i></div>
+            <h3>Branding</h3>
+            <p>Logo i identyfikacja wizualna, które porządkują markę od pierwszego kontaktu po finalną sprzedaż.</p>
+            <a href="mailto:markediapl@gmail.com?subject=Branding%20dla%20firmy" aria-label="Zapytaj o branding">
+              <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+            </a>
+          </article>
+        </div>
+      </section>
+
+      <section class="section brand-lab" aria-labelledby="lab-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Brand lab</p>
+          <h2 id="lab-title">Przeciągnij i zobacz różnicę między „jest ok” a „chcę to mieć”.</h2>
+        </div>
+        <div class="compare reveal">
+          <div class="compare__stage">
+            <div class="compare__before">
+              <span>Przed</span>
+              <strong>losowe kolory<br />brak hierarchii<br />plik do poprawki</strong>
+            </div>
+            <div class="compare__after">
+              <img src="assets/BRANDING.png" alt="Gotowy branding Markedia" />
+              <span>Po Markedia</span>
+            </div>
+            <div class="compare__handle" aria-hidden="true">
+              <i data-lucide="chevrons-left-right" aria-hidden="true"></i>
+            </div>
+          </div>
+          <label class="compare__control">
+            <span>Poziom dopracowania</span>
+            <input type="range" min="18" max="82" value="58" data-compare />
+          </label>
+        </div>
+      </section>
+
+      <section class="section showcase" id="realizacje" aria-labelledby="showcase-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Realizacje</p>
+          <h2 id="showcase-title">Portfolio z energią kampanii, nie katalogu.</h2>
+        </div>
+
+        <div class="filter-bar reveal" role="tablist" aria-label="Filtr realizacji">
+          <button class="filter is-active" type="button" data-filter="all">Wszystko</button>
+          <button class="filter" type="button" data-filter="branding">Branding</button>
+          <button class="filter" type="button" data-filter="print">Druk</button>
+          <button class="filter" type="button" data-filter="social">Social</button>
+        </div>
+
+        <div class="portfolio-grid">
+          <article class="portfolio-item reveal" data-category="branding">
+            <img src="assets/BRANDING.png" alt="Branding Markedia na materialach firmowych" />
+            <div class="portfolio-item__caption">
+              <span>Branding</span>
+              <h3>Pełna identyfikacja</h3>
+            </div>
+            <button class="portfolio-open" type="button" aria-label="Powieksz realizacje: Pelna identyfikacja">
+              <i data-lucide="maximize-2" aria-hidden="true"></i>
+            </button>
+          </article>
+          <article class="portfolio-item reveal" data-category="print">
+            <img src="assets/WIZYTOWKI-b-scaled.png" alt="Wizytowki Markedia" />
+            <div class="portfolio-item__caption">
+              <span>Print</span>
+              <h3>Wizytówki premium</h3>
+            </div>
+            <button class="portfolio-open" type="button" aria-label="Powieksz realizacje: Wizytowki premium">
+              <i data-lucide="maximize-2" aria-hidden="true"></i>
+            </button>
+          </article>
+          <article class="portfolio-item reveal" data-category="social">
+            <img src="assets/Zasob-5-1-1.png" alt="Projekt graficzny Markedia" />
+            <div class="portfolio-item__caption">
+              <span>Social</span>
+              <h3>Kampania wizualna</h3>
+            </div>
+            <button class="portfolio-open" type="button" aria-label="Powieksz realizacje: Kampania wizualna">
+              <i data-lucide="maximize-2" aria-hidden="true"></i>
+            </button>
+          </article>
+          <article class="portfolio-item reveal" data-category="branding">
+            <img src="assets/3D-MARKEDIA.png" alt="Logo 3D Markedia" />
+            <div class="portfolio-item__caption">
+              <span>3D</span>
+              <h3>Efektowny znak</h3>
+            </div>
+            <button class="portfolio-open" type="button" aria-label="Powieksz realizacje: Efektowny znak">
+              <i data-lucide="maximize-2" aria-hidden="true"></i>
+            </button>
+          </article>
+        </div>
+      </section>
+
+      <section class="section process" id="proces" aria-labelledby="process-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Proces</p>
+          <h2 id="process-title">Od chaosu w głowie do plików gotowych do użycia.</h2>
+        </div>
+        <div class="process-line">
+          <article class="process-step reveal">
+            <span>01</span>
+            <h3>Brief bez lania wody</h3>
+            <p>Ustalamy cel, odbiorców, formaty, styl i priorytet: sprzedaż, rozpoznawalność albo szybka publikacja.</p>
+          </article>
+          <article class="process-step reveal">
+            <span>02</span>
+            <h3>Koncepcja z charakterem</h3>
+            <p>Dostajesz kierunek wizualny, który da się ocenić konkretnie, bez zgadywania „czy to jest to”.</p>
+          </article>
+          <article class="process-step reveal">
+            <span>03</span>
+            <h3>Dopracowanie detali</h3>
+            <p>Kolory, typografia, rytm, eksporty, marginesy i wersje pod kanały idą pod lupę.</p>
+          </article>
+          <article class="process-step reveal">
+            <span>04</span>
+            <h3>Gotowe paczki plików</h3>
+            <p>Otrzymujesz materiały do druku, publikacji lub dalszej pracy, poukładane i nazwane po ludzku.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section packages" aria-labelledby="packages-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Pakiety</p>
+          <h2 id="packages-title">Wybierz tempo, a Markedia ogarnie resztę wizualnie.</h2>
+        </div>
+        <div class="package-grid">
+          <article class="package-card reveal">
+            <span class="package-card__tag">Start</span>
+            <h3>Szybki materiał</h3>
+            <p>Jedna ulotka, plakat, baner albo zestaw grafik na konkretną akcję.</p>
+            <ul>
+              <li>1 kierunek wizualny</li>
+              <li>pliki do druku lub online</li>
+              <li>spójny layout i eksport</li>
+            </ul>
+            <a href="mailto:markediapl@gmail.com?subject=Pakiet%20Start" class="btn btn--dark magnetic">
+              <i data-lucide="zap" aria-hidden="true"></i>
+              <span>Start</span>
+            </a>
+          </article>
+          <article class="package-card package-card--hot reveal">
+            <span class="package-card__tag">Najmocniejszy</span>
+            <h3>Kampania wizualna</h3>
+            <p>Seria materiałów, która wygląda jak jedna marka, nie przypadkowy folder z plikami.</p>
+            <ul>
+              <li>social media + druk</li>
+              <li>kilka formatów kampanii</li>
+              <li>priorytetowa komunikacja</li>
+            </ul>
+            <a href="mailto:markediapl@gmail.com?subject=Pakiet%20Kampania%20wizualna" class="btn btn--primary magnetic">
+              <i data-lucide="flame" aria-hidden="true"></i>
+              <span>Biorę kampanię</span>
+            </a>
+          </article>
+          <article class="package-card reveal">
+            <span class="package-card__tag">Brand</span>
+            <h3>Identyfikacja</h3>
+            <p>Logo, kierunek wizualny i zestaw startowy dla marki, która ma wyglądać pewnie.</p>
+            <ul>
+              <li>logo i warianty</li>
+              <li>kolory oraz typografia</li>
+              <li>pakiet plików marki</li>
+            </ul>
+            <a href="mailto:markediapl@gmail.com?subject=Pakiet%20Identyfikacja" class="btn btn--dark magnetic">
+              <i data-lucide="badge-check" aria-hidden="true"></i>
+              <span>Buduj markę</span>
+            </a>
+          </article>
+        </div>
+      </section>
+
+      <section class="section impact" aria-labelledby="impact-title">
+        <div class="impact__copy reveal">
+          <p class="eyebrow">Dlaczego to działa</p>
+          <h2 id="impact-title">Design ma łapać wzrok, ale też prowadzić klienta do decyzji.</h2>
+          <p>
+            Dlatego każdy projekt ma hierarchię, kontrast, jasny komunikat i wersje pod miejsce, w którym naprawdę
+            będzie użyty.
+          </p>
+          <a class="btn btn--dark magnetic" href="#kontakt">
+            <i data-lucide="message-square" aria-hidden="true"></i>
+            <span>Porozmawiajmy</span>
+          </a>
+        </div>
+        <div class="impact-board reveal" aria-hidden="true">
+          <div class="impact-board__screen">
+            <img src="assets/HOME-IMAGE-1.png" alt="" />
+            <div class="scanner"></div>
+          </div>
+          <div class="impact-board__chips">
+            <span>CMYK</span>
+            <span>RGB</span>
+            <span>Reels</span>
+            <span>OOH</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section faq" aria-labelledby="faq-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Szybkie odpowiedzi</p>
+          <h2 id="faq-title">Najczęściej pytają o to.</h2>
+        </div>
+        <div class="faq-list">
+          <article class="faq-item reveal">
+            <button type="button" aria-expanded="false">
+              <span>Ile trwa przygotowanie projektu?</span>
+              <i data-lucide="plus" aria-hidden="true"></i>
+            </button>
+            <p>Po briefie Markedia może przygotować pierwszą koncepcję nawet w 48 godzin, zależnie od zakresu i liczby formatów.</p>
+          </article>
+          <article class="faq-item reveal">
+            <button type="button" aria-expanded="false">
+              <span>Czy projekt będzie gotowy do druku?</span>
+              <i data-lucide="plus" aria-hidden="true"></i>
+            </button>
+            <p>Tak. Materiały do druku są przygotowywane z myślą o marginesach, spadach, czytelności i właściwym eksporcie.</p>
+          </article>
+          <article class="faq-item reveal">
+            <button type="button" aria-expanded="false">
+              <span>Czy można zamówić same grafiki social media?</span>
+              <i data-lucide="plus" aria-hidden="true"></i>
+            </button>
+            <p>Tak. Możesz zamówić pojedynczy pakiet grafik, serię postów, reklamy albo spójne szablony do dalszego użycia.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="contact" id="kontakt" aria-labelledby="contact-title">
+        <div class="contact__inner">
+          <div class="contact__copy reveal">
+            <img src="assets/MARKEDIA-LOGO-WHITE.svg" alt="Markedia" />
+            <p class="eyebrow">Start projektu</p>
+            <h2 id="contact-title">Masz markę do pokazania? Dajmy jej wejście z przytupem.</h2>
+            <div class="contact-score" aria-label="Szybka ocena przygotowania briefu">
+              <span>Brief readiness</span>
+              <strong>92%</strong>
+              <div><i></i></div>
+            </div>
+          </div>
+          <form class="contact-form reveal" action="mailto:markediapl@gmail.com" method="post" enctype="text/plain">
+            <div class="brief-picks" aria-label="Wybierz typ projektu">
+              <button type="button" data-brief="Potrzebuję materiałów do druku: ulotka / wizytówka / plakat / baner.">
+                <i data-lucide="printer" aria-hidden="true"></i>
+                <span>Druk</span>
+              </button>
+              <button type="button" data-brief="Potrzebuję grafik do social media: posty / relacje / reklamy / szablony.">
+                <i data-lucide="megaphone" aria-hidden="true"></i>
+                <span>Social</span>
+              </button>
+              <button type="button" data-brief="Potrzebuję brandingu: logo / kolory / typografia / pakiet plików.">
+                <i data-lucide="badge-check" aria-hidden="true"></i>
+                <span>Branding</span>
+              </button>
+            </div>
+            <label>
+              <span>Imię lub firma</span>
+              <input name="name" type="text" autocomplete="name" required />
+            </label>
+            <label>
+              <span>Email</span>
+              <input name="email" type="email" autocomplete="email" required />
+            </label>
+            <label>
+              <span>Co projektujemy?</span>
+              <textarea name="message" rows="4" required></textarea>
+            </label>
+            <button class="btn btn--primary magnetic" type="submit">
+              <i data-lucide="rocket" aria-hidden="true"></i>
+              <span>Wyślij zapytanie</span>
+            </button>
+            <div class="contact-form__meta">
+              <a href="tel:+48732139599">+48 732 139 599</a>
+              <a href="mailto:markediapl@gmail.com">markediapl@gmail.com</a>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer reveal">
+      <div class="footer__inner">
+        <div class="footer__brand">
+          <img src="assets/MARKEDIA-LOGO-WHITE.svg" alt="Markedia" />
+          <p>Grafika, która sprzedaje.</p>
+        </div>
+        <div class="footer__socials">
+          <p class="eyebrow">Obserwuj nas</p>
+          <div class="social-links">
+            <a href="#" aria-label="Instagram" class="magnetic" target="_blank" rel="noopener noreferrer"><i data-lucide="instagram" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Facebook" class="magnetic" target="_blank" rel="noopener noreferrer"><i data-lucide="facebook" aria-hidden="true"></i></a>
+            <a href="#" aria-label="LinkedIn" class="magnetic" target="_blank" rel="noopener noreferrer"><i data-lucide="linkedin" aria-hidden="true"></i></a>
+          </div>
+        </div>
+        <div class="footer__legal">
+          <p>&copy; 2026 Markedia. Wszelkie prawa zastrzeżone.</p>
+        </div>
+      </div>
+    </footer>
+
+    <div class="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Podglad realizacji">
+      <button class="lightbox__close" type="button" aria-label="Zamknij podglad">
+        <i data-lucide="x" aria-hidden="true"></i>
+      </button>
+      <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="" />
+      <p></p>
+    </div>
+
+    <script
+      src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"
+      async
+      onload="window.lucide && window.lucide.createIcons()"
+    ></script>
+    <script src="script.js"></script>
+  </body>
+</html>

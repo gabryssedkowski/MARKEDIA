@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Zamow baner w Markedia. Wybierz szablon, format, wpisz tresc i przygotuj brief do projektu reklamowego."
+    />
+    <title>Zamów baner - Markedia</title>
+    <link rel="icon" href="assets/MARKEDIA-LOGO.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Urbanist:wght@400;500;600;700;800;900&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="is-loading banner-page">
+    <div class="loader" aria-hidden="true">
+      <img src="assets/MARKEDIA-LOGO-WHITE.svg" alt="" />
+      <div class="loader__bar"><span></span></div>
+    </div>
+
+    <div class="cursor-light" aria-hidden="true"></div>
+    <div class="site-noise" aria-hidden="true"></div>
+    <canvas class="motion-field" aria-hidden="true"></canvas>
+    <div class="scroll-progress" aria-hidden="true"><span></span></div>
+
+    <header class="site-header" data-header>
+      <a class="brand" href="index.html" aria-label="Markedia - strona glowna">
+        <img src="assets/MARKEDIA-LOGO.svg" alt="Markedia" />
+      </a>
+      <nav class="nav" id="site-nav" aria-label="Nawigacja glowna">
+        <a href="index.html#uslugi">Usługi</a>
+        <a href="baner.html" class="is-active">Zamów</a>
+        <a href="index.html#realizacje">Realizacje</a>
+        <a href="index.html#proces">Proces</a>
+        <a href="index.html#kontakt">Kontakt</a>
+      </nav>
+      <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Otworz menu">
+        <i data-lucide="menu" aria-hidden="true"></i>
+      </button>
+      <a class="icon-button" href="tel:+48732139599" aria-label="Zadzwon do Markedia">
+        <i data-lucide="phone-call" aria-hidden="true"></i>
+      </a>
+    </header>
+
+    <aside class="quick-actions" aria-label="Szybki kontakt">
+      <a href="mailto:markediapl@gmail.com" aria-label="Napisz email">
+        <i data-lucide="mail" aria-hidden="true"></i>
+      </a>
+      <a href="tel:+48732139599" aria-label="Zadzwon">
+        <i data-lucide="phone" aria-hidden="true"></i>
+      </a>
+      <a href="#zamowienie" aria-label="Przejdz do zamowienia">
+        <i data-lucide="shopping-bag" aria-hidden="true"></i>
+      </a>
+    </aside>
+
+    <main>
+      <section class="banner-hero">
+        <div class="banner-hero__copy reveal">
+          <p class="eyebrow">Konfigurator banera</p>
+          <h1>Zamów baner 200x100 cm gotowy pod druk i montaż.</h1>
+          <p>
+            Startujemy od prostego banera sprzedażowego: hard solvent, zgrzewane krawędzie i oczka co 50 cm. Wpisz
+            treść, a podgląd zaktualizuje się od razu.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary magnetic" href="#katalog">
+              <i data-lucide="layout-template" aria-hidden="true"></i>
+              <span>Wybierz wzór</span>
+            </a>
+            <a class="btn btn--ghost magnetic" href="#zamowienie">
+              <i data-lucide="send" aria-hidden="true"></i>
+              <span>Wyślij brief</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="banner-preview-shell reveal" aria-label="Podglad banera na zywo">
+          <div class="banner-preview banner-preview--sale" data-banner-preview data-theme="sale">
+            <div class="banner-preview__noise"></div>
+            <div class="banner-preview__seam" aria-hidden="true"></div>
+            <div class="banner-preview__eyelets" aria-hidden="true">
+              <i style="--x: 4%; --y: 8%"></i>
+              <i style="--x: 25%; --y: 8%"></i>
+              <i style="--x: 50%; --y: 8%"></i>
+              <i style="--x: 75%; --y: 8%"></i>
+              <i style="--x: 96%; --y: 8%"></i>
+              <i style="--x: 4%; --y: 92%"></i>
+              <i style="--x: 25%; --y: 92%"></i>
+              <i style="--x: 50%; --y: 92%"></i>
+              <i style="--x: 75%; --y: 92%"></i>
+              <i style="--x: 96%; --y: 92%"></i>
+              <i style="--x: 4%; --y: 50%"></i>
+              <i style="--x: 96%; --y: 50%"></i>
+            </div>
+            <h2 data-preview-title>SPRZEDAM</h2>
+            <p class="banner-preview__phone">
+              <i data-lucide="phone-call" aria-hidden="true"></i>
+              <span data-preview-subtitle>600 265 203</span>
+            </p>
+          </div>
+          <div class="banner-preview-shell__bar">
+            <span>Podgląd na żywo 2:1</span>
+            <i></i>
+          </div>
+        </div>
+      </section>
+
+      <section class="section banner-templates" id="szablony" aria-labelledby="templates-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Szablony startowe</p>
+          <h2 id="templates-title">Wybierz klimat banera. Markedia dopracuje go pod Twoją markę.</h2>
+        </div>
+        <div class="template-grid">
+          <button class="template-card is-active reveal" type="button" data-template="promo">
+            <span class="template-card__mini template-card__mini--promo"></span>
+            <strong>Sprzedam</strong>
+            <small>Prosty baner: żółte tło, czarny tekst, numer telefonu.</small>
+          </button>
+          <button class="template-card reveal" type="button" data-template="premium">
+            <span class="template-card__mini template-card__mini--premium"></span>
+            <strong>Premium service</strong>
+            <small>Elegancki baner dla usług, marki osobistej lub oferty B2B.</small>
+          </button>
+          <button class="template-card reveal" type="button" data-template="event">
+            <span class="template-card__mini template-card__mini--event"></span>
+            <strong>Event night</strong>
+            <small>Koncert, wydarzenie, premiera, otwarcie lokalu.</small>
+          </button>
+          <button class="template-card reveal" type="button" data-template="local">
+            <span class="template-card__mini template-card__mini--local"></span>
+            <strong>Local hero</strong>
+            <small>Baner dla lokalnej firmy, punktu usługowego lub sklepu.</small>
+          </button>
+          <button class="template-card reveal" type="button" data-template="minimal">
+            <span class="template-card__mini template-card__mini--minimal"></span>
+            <strong>Minimal black</strong>
+            <small>Duży kontrast, mało tekstu, mocny komunikat.</small>
+          </button>
+          <button class="template-card reveal" type="button" data-template="recruit">
+            <span class="template-card__mini template-card__mini--recruit"></span>
+            <strong>Rekrutacja</strong>
+            <small>Ogłoszenie, nabór, kampania HR lub employer branding.</small>
+          </button>
+        </div>
+      </section>
+
+      <section class="section banner-catalog" id="katalog" aria-labelledby="catalog-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Katalog wzorów</p>
+          <h2 id="catalog-title">Wybierz kategorię i zamów baner na bazie gotowej wizualizacji.</h2>
+        </div>
+        <div class="catalog-toolbar reveal">
+          <div class="catalog-filters" data-catalog-filters aria-label="Kategorie banerów"></div>
+        </div>
+        <div class="catalog-grid" data-catalog-grid></div>
+        <p class="catalog-empty" data-catalog-empty>Brak wzorów w tej kategorii.</p>
+      </section>
+
+      <section class="section banner-order" id="zamowienie" aria-labelledby="order-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Zamówienie</p>
+          <h2 id="order-title">Uzupełnij kilka pól. Resztę zamienimy w projekt, który robi wrażenie.</h2>
+        </div>
+        <div class="banner-order__grid">
+          <form class="banner-form reveal" action="mailto:markediapl@gmail.com" method="post" enctype="text/plain" data-order-form>
+            <div class="order-flow banner-form__wide" aria-label="Etapy zamówienia">
+              <span class="is-active"><b>1</b> Wzór</span>
+              <span><b>2</b> Dane</span>
+              <span><b>3</b> Wycena</span>
+            </div>
+            <div class="order-assistant banner-form__wide" data-order-selection>
+              <i data-lucide="badge-check" aria-hidden="true"></i>
+              <div>
+                <span>Wybrany wzór</span>
+                <strong data-selected-template-title>Startowy baner SPRZEDAM</strong>
+                <small data-selected-template-meta>Format 200 x 100 cm / hard solvent / oczka co 50 cm</small>
+              </div>
+              <a href="#katalog">Zmień</a>
+            </div>
+            <div class="format-picker" aria-label="Wybierz format banera">
+              <button class="is-active" type="button" data-banner-format="200 x 100 cm">200x100 cm</button>
+              <button type="button" data-banner-format="300 x 100 cm">300x100 cm</button>
+              <button type="button" data-banner-format="150 x 80 cm">150x80 cm</button>
+              <button type="button" data-banner-format="własny wymiar">Własny</button>
+            </div>
+            <div class="custom-size banner-form__wide" data-custom-size hidden>
+              <label>
+                <span>Szerokość cm</span>
+                <input name="Szerokosc" data-custom-width type="number" min="50" max="1000" step="1" placeholder="200" />
+              </label>
+              <label>
+                <span>Wysokość cm</span>
+                <input name="Wysokosc" data-custom-height type="number" min="40" max="400" step="1" placeholder="100" />
+              </label>
+            </div>
+            <div class="production-specs" aria-label="Specyfikacja produkcji">
+              <span>Hard solvent</span>
+              <span>Zgrzewane krawędzie</span>
+              <span>Oczka co 50 cm</span>
+            </div>
+            <label>
+              <span>Imię / firma</span>
+              <input name="Kontakt" data-order-input="contact" type="text" placeholder="Np. Auto Serwis Kowalski" required />
+            </label>
+            <label>
+              <span>Email</span>
+              <input name="Email" data-order-input="email" type="email" placeholder="kontakt@firma.pl" />
+            </label>
+            <label>
+              <span>Główne hasło</span>
+              <input name="Haslo" data-preview-input="title" type="text" value="SPRZEDAM" />
+            </label>
+            <label>
+              <span>Telefon</span>
+              <input
+                name="Telefon"
+                data-preview-input="subtitle"
+                type="text"
+                value="600 265 203"
+                required
+              />
+            </label>
+            <label>
+              <span>Ilość sztuk</span>
+              <input name="Ilosc" data-order-input="quantity" type="number" min="1" max="100" step="1" value="1" />
+            </label>
+            <label>
+              <span>Termin</span>
+              <select name="Termin" data-order-input="deadline">
+                <option>Standardowy</option>
+                <option>Pilny</option>
+                <option>Do ustalenia</option>
+              </select>
+            </label>
+            <label class="banner-form__wide">
+              <span>Dodatkowe uwagi</span>
+              <textarea
+                name="Uwagi"
+                data-order-input="notes"
+                rows="4"
+                placeholder="Np. adres montażu, termin realizacji, kolory, logo albo dodatkowy tekst."
+              ></textarea>
+            </label>
+            <input type="hidden" name="Brief" data-banner-summary />
+            <input type="hidden" name="WybranyBaner" data-selected-banner />
+            <p class="order-status banner-form__wide" data-order-status role="status"></p>
+            <button class="btn btn--primary magnetic banner-form__submit" type="submit">
+              <i data-lucide="rocket" aria-hidden="true"></i>
+              <span>Zamów baner</span>
+            </button>
+          </form>
+
+          <aside class="banner-includes reveal">
+            <div class="banner-order-live" aria-label="Podglad na zywo zamawianego banera">
+              <div class="banner-preview banner-preview--sale banner-preview--order" data-banner-preview data-theme="sale">
+                <div class="banner-preview__noise"></div>
+                <div class="banner-preview__seam" aria-hidden="true"></div>
+                <div class="banner-preview__eyelets" aria-hidden="true">
+                  <i style="--x: 4%; --y: 8%"></i>
+                  <i style="--x: 25%; --y: 8%"></i>
+                  <i style="--x: 50%; --y: 8%"></i>
+                  <i style="--x: 75%; --y: 8%"></i>
+                  <i style="--x: 96%; --y: 8%"></i>
+                  <i style="--x: 4%; --y: 92%"></i>
+                  <i style="--x: 25%; --y: 92%"></i>
+                  <i style="--x: 50%; --y: 92%"></i>
+                  <i style="--x: 75%; --y: 92%"></i>
+                  <i style="--x: 96%; --y: 92%"></i>
+                  <i style="--x: 4%; --y: 50%"></i>
+                  <i style="--x: 96%; --y: 50%"></i>
+                </div>
+                <h2 data-preview-title>SPRZEDAM</h2>
+                <p class="banner-preview__phone">
+                  <i data-lucide="phone-call" aria-hidden="true"></i>
+                  <span data-preview-subtitle>600 265 203</span>
+                </p>
+              </div>
+              <span>Podgląd na żywo przy formularzu</span>
+            </div>
+            <div class="order-recap" aria-label="Podsumowanie zamówienia">
+              <h3>Podsumowanie</h3>
+              <dl>
+                <div>
+                  <dt>Wzór</dt>
+                  <dd data-order-recap="template">Startowy baner SPRZEDAM</dd>
+                </div>
+                <div>
+                  <dt>Format</dt>
+                  <dd data-order-recap="format">200 x 100 cm</dd>
+                </div>
+                <div>
+                  <dt>Dane</dt>
+                  <dd data-order-recap="contact">Uzupełnij kontakt</dd>
+                </div>
+                <div>
+                  <dt>Tryb</dt>
+                  <dd data-order-recap="deadline">Standardowy</dd>
+                </div>
+              </dl>
+            </div>
+            <h3>Co może dostać klient?</h3>
+            <ul>
+              <li>Projekt banera 200x100 cm w proporcji 2:1</li>
+              <li>Przygotowanie pod druk hard solvent</li>
+              <li>Zgrzewane krawędzie pod montaż</li>
+              <li>Oczkowanie co 50 cm po obwodzie</li>
+              <li>Prosty, czytelny układ widoczny z daleka</li>
+            </ul>
+            <div class="banner-price">
+              <span>start od</span>
+              <strong>indywidualnej wyceny</strong>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"
+      async
+      onload="window.lucide && window.lucide.createIcons()"
+    ></script>
+    <script src="script.js"></script>
+  </body>
+</html>

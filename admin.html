@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Panel admina Markedia do dodawania kategorii i wizualizacji banerów."
+    />
+    <title>Panel banerów - Markedia</title>
+    <link rel="icon" href="assets/MARKEDIA-LOGO.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Urbanist:wght@400;500;600;700;800;900&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="is-loading banner-page admin-page">
+    <div class="loader" aria-hidden="true">
+      <img src="assets/MARKEDIA-LOGO-WHITE.svg" alt="" />
+      <div class="loader__bar"><span></span></div>
+    </div>
+
+    <div class="cursor-light" aria-hidden="true"></div>
+    <div class="site-noise" aria-hidden="true"></div>
+    <canvas class="motion-field" aria-hidden="true"></canvas>
+    <div class="scroll-progress" aria-hidden="true"><span></span></div>
+
+    <header class="site-header" data-header>
+      <a class="brand" href="index.html" aria-label="Markedia - strona glowna">
+        <img src="assets/MARKEDIA-LOGO.svg" alt="Markedia" />
+      </a>
+      <nav class="nav" id="site-nav" aria-label="Nawigacja glowna">
+        <a href="index.html#uslugi">Usługi</a>
+        <a href="baner.html">Zamów</a>
+        <a href="index.html#realizacje">Realizacje</a>
+        <a href="index.html#proces">Proces</a>
+        <a href="index.html#kontakt">Kontakt</a>
+      </nav>
+      <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Otworz menu">
+        <i data-lucide="menu" aria-hidden="true"></i>
+      </button>
+      <a class="icon-button" href="baner.html" aria-label="Przejdz do strony zamowien">
+        <i data-lucide="shopping-bag" aria-hidden="true"></i>
+      </a>
+    </header>
+
+    <main>
+      <section class="admin-hero">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Panel admina</p>
+          <h1>Dodawaj kategorie i wizualizacje banerów do katalogu zamówień.</h1>
+        </div>
+      </section>
+
+      <section class="section admin-workspace" aria-labelledby="admin-title">
+        <div class="admin-grid">
+          <form class="admin-card admin-form reveal" data-admin-form>
+            <div>
+              <p class="eyebrow">Nowy baner</p>
+              <h2 id="admin-title">Wgraj wizualizację</h2>
+            </div>
+            <label>
+              <span>Nazwa wzoru</span>
+              <input name="title" type="text" placeholder="Np. Remonty i elewacje" required />
+            </label>
+            <label>
+              <span>Kategoria</span>
+              <select name="category" data-admin-category-select required>
+                <option value="" disabled selected>Wybierz kategorię</option>
+              </select>
+            </label>
+            <label>
+              <span>Format</span>
+              <input name="format" type="text" value="200 x 100 cm" />
+            </label>
+            <label>
+              <span>Cena / status</span>
+              <input name="priceFrom" type="text" value="indywidualna wycena" />
+            </label>
+            <label class="admin-form__wide">
+              <span>Opis dla klienta</span>
+              <textarea name="description" rows="4" placeholder="Krótko: dla kogo jest wzór i kiedy warto go wybrać."></textarea>
+            </label>
+            <label class="admin-file admin-form__wide">
+              <span>Wizualizacja</span>
+              <input name="image" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+            </label>
+            <div class="admin-upload-preview admin-form__wide" data-admin-image-preview>
+              <i data-lucide="image-plus" aria-hidden="true"></i>
+              <span>Podgląd pliku</span>
+            </div>
+            <button class="btn btn--primary magnetic admin-form__wide" type="submit">
+              <i data-lucide="upload-cloud" aria-hidden="true"></i>
+              <span>Dodaj baner</span>
+            </button>
+            <p class="admin-status" data-admin-status role="status"></p>
+          </form>
+
+          <aside class="admin-card admin-side reveal">
+            <form class="admin-category-form" data-admin-category-form>
+              <p class="eyebrow">Kategorie</p>
+              <label>
+                <span>Dodaj kategorię</span>
+                <input name="name" type="text" placeholder="Np. Mechanik" />
+              </label>
+              <button class="btn btn--primary" type="submit">
+                <i data-lucide="plus" aria-hidden="true"></i>
+                <span>Dodaj</span>
+              </button>
+            </form>
+            <div class="admin-category-list" data-admin-category-list></div>
+          </aside>
+        </div>
+
+        <div class="admin-card admin-list reveal">
+          <div class="admin-list__top">
+            <div>
+              <p class="eyebrow">Katalog</p>
+              <h2>Wgrane banery</h2>
+            </div>
+            <a class="btn btn--ghost" href="baner.html#katalog">
+              <i data-lucide="eye" aria-hidden="true"></i>
+              <span>Zobacz stronę</span>
+            </a>
+          </div>
+          <div class="admin-banner-list" data-admin-banner-list></div>
+        </div>
+
+        <div class="admin-card admin-list reveal">
+          <div class="admin-list__top">
+            <div>
+              <p class="eyebrow">Zamówienia</p>
+              <h2>Nowe briefy od klientów</h2>
+            </div>
+            <button class="btn btn--ghost" type="button" data-admin-refresh-orders>
+              <i data-lucide="refresh-cw" aria-hidden="true"></i>
+              <span>Odśwież</span>
+            </button>
+          </div>
+          <div class="admin-order-list" data-admin-order-list></div>
+        </div>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"
+      async
+      onload="window.lucide && window.lucide.createIcons()"
+    ></script>
+    <script src="script.js"></script>
+  </body>
+</html>

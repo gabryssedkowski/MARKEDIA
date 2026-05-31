@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" role="img" aria-labelledby="title desc">
+  <title id="title">Wizualizacja banera</title>
+  <desc id="desc">Domyślna wizualizacja banera Markedia.</desc>
+  <rect width="800" height="400" rx="18" fill="#ffe100"/>
+  <rect x="24" y="24" width="752" height="352" rx="8" fill="none" stroke="#111" stroke-width="4" stroke-dasharray="12 12" opacity=".35"/>
+  <text x="400" y="190" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-size="76" font-weight="900" fill="#050505">TWÓJ BANER</text>
+  <text x="400" y="265" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-size="44" font-weight="900" fill="#050505">200 x 100 cm</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" role="img" aria-labelledby="title desc">
+  <title id="title">Baner budowlany</title>
+  <desc id="desc">Żółto-czarny baner remonty i elewacje.</desc>
+  <defs>
+    <pattern id="stripes" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(-28)">
+      <rect width="18" height="18" fill="#ffe100"/>
+      <rect width="2" height="18" fill="#000" opacity=".08"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="400" rx="18" fill="url(#stripes)"/>
+  <rect x="24" y="24" width="752" height="352" rx="8" fill="none" stroke="#111" stroke-width="4" stroke-dasharray="12 12" opacity=".42"/>
+  <text x="400" y="178" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-size="84" font-weight="900" fill="#050505">REMONTY</text>
+  <text x="400" y="248" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-size="42" font-weight="900" fill="#050505">ELEWACJE • DACHY • WYKOŃCZENIA</text>
+  <text x="400" y="314" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-size="46" font-weight="900" fill="#050505">600 265 203</text>
+</svg>

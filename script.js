@@ -229,6 +229,7 @@ const ready = () => {
   initBannerConfigurator();
   initBannerCatalog();
   initBannerAdmin();
+  initCart();
 
   const lightbox = document.querySelector(".lightbox");
   const lightboxImage = lightbox?.querySelector("img");
@@ -962,6 +963,189 @@ function initMotionField() {
   resize();
   window.addEventListener("resize", resize);
   draw();
+}
+
+function initCart() {
+  const cartState = {
+    items: JSON.parse(localStorage.getItem("markedia-cart")) || [],
+  };
+
+  const overlay = document.querySelector("[data-cart-overlay]");
+  const drawer = document.querySelector("[data-cart-drawer]");
+  const toggleBtns = document.querySelectorAll("[data-cart-toggle]");
+  const cartItemsContainer = document.querySelector("[data-cart-items]");
+  const cartTotal = document.querySelector("[data-cart-total]");
+  const cartCounts = document.querySelectorAll("[data-cart-count]");
+  const addToCartBtns = document.querySelectorAll("[data-add-to-cart]");
+  const checkoutBtn = document.querySelector("[data-cart-checkout]");
+
+  function saveCart() {
+    localStorage.setItem("markedia-cart", JSON.stringify(cartState.items));
+  }
+
+  function toggleCart() {
+    if (!drawer || !overlay) return;
+    const isOpen = drawer.classList.contains("is-open");
+
+    if (isOpen) {
+      drawer.classList.remove("is-open");
+      overlay.classList.remove("is-open");
+      overlay.setAttribute("aria-hidden", "true");
+      drawer.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    } else {
+      drawer.classList.add("is-open");
+      overlay.classList.add("is-open");
+      overlay.setAttribute("aria-hidden", "false");
+      drawer.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+  }
+
+  function updateCartUI() {
+    if (!cartItemsContainer || !cartTotal || !cartCounts) return;
+
+    let totalElements = 0;
+    let totalPrice = 0;
+
+    cartItemsContainer.innerHTML = "";
+
+    if (cartState.items.length === 0) {
+      cartItemsContainer.innerHTML = '<p class="cart-empty-message">Twój koszyk jest pusty.</p>';
+    } else {
+      cartState.items.forEach((item, index) => {
+        totalElements += item.quantity;
+        totalPrice += item.price * item.quantity;
+
+        const cartItemHTML = `
+          <div class="cart-item">
+            <div class="cart-item__info">
+              <span class="cart-item__title">${item.title}</span>
+              <span class="cart-item__price">${item.price} zł</span>
+            </div>
+            <div class="cart-item__actions">
+              <div class="cart-item__quantity">
+                <button type="button" data-cart-action="decrease" data-index="${index}" aria-label="Zmniejsz ilość">
+                  <i data-lucide="minus"></i>
+                </button>
+                <span>${item.quantity}</span>
+                <button type="button" data-cart-action="increase" data-index="${index}" aria-label="Zwiększ ilość">
+                  <i data-lucide="plus"></i>
+                </button>
+              </div>
+              <button class="cart-item__remove" type="button" data-cart-action="remove" data-index="${index}" aria-label="Usuń z koszyka">
+                <i data-lucide="trash-2"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        cartItemsContainer.insertAdjacentHTML("beforeend", cartItemHTML);
+      });
+    }
+
+    cartCounts.forEach(counter => {
+      counter.textContent = totalElements;
+      // Ukryj badge gdy zero
+      if(totalElements === 0) {
+        counter.style.display = 'none';
+      } else {
+        counter.style.display = 'flex';
+      }
+    });
+
+    cartTotal.textContent = `${totalPrice} zł`;
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+
+  function addToCart(id, title, price) {
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice)) return;
+
+    const existingItem = cartState.items.find((item) => item.id === id);
+
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cartState.items.push({ id, title, price: parsedPrice, quantity: 1 });
+    }
+
+    saveCart();
+    updateCartUI();
+    toggleCart(); // Otwórz koszyk po dodaniu
+  }
+
+  function updateQuantity(index, delta) {
+    if (cartState.items[index]) {
+      cartState.items[index].quantity += delta;
+      if (cartState.items[index].quantity <= 0) {
+        cartState.items.splice(index, 1);
+      }
+      saveCart();
+      updateCartUI();
+    }
+  }
+
+  function removeItem(index) {
+    if (cartState.items[index]) {
+      cartState.items.splice(index, 1);
+      saveCart();
+      updateCartUI();
+    }
+  }
+
+  // Event Listeners
+  toggleBtns.forEach((btn) => {
+    btn.addEventListener("click", toggleCart);
+  });
+
+  if (overlay) {
+    overlay.addEventListener("click", toggleCart);
+  }
+
+  addToCartBtns.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const id = btn.dataset.itemId;
+      const title = btn.dataset.itemTitle;
+      const price = btn.dataset.itemPrice;
+      addToCart(id, title, price);
+    });
+  });
+
+  if (cartItemsContainer) {
+    cartItemsContainer.addEventListener("click", (e) => {
+      const actionBtn = e.target.closest("[data-cart-action]");
+      if (!actionBtn) return;
+
+      const action = actionBtn.dataset.cartAction;
+      const index = parseInt(actionBtn.dataset.index, 10);
+
+      if (isNaN(index)) return;
+
+      if (action === "increase") updateQuantity(index, 1);
+      if (action === "decrease") updateQuantity(index, -1);
+      if (action === "remove") removeItem(index);
+    });
+  }
+
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener("click", () => {
+      if (cartState.items.length === 0) return;
+
+      let emailBody = "Dzień dobry, chciałbym złożyć zamówienie na następujące pakiety:\n\n";
+      cartState.items.forEach(item => {
+        emailBody += `- ${item.title} (x${item.quantity}) - ${item.price * item.quantity} zł\n`;
+      });
+      emailBody += `\nŁączna wartość: ${cartTotal.textContent}\n\nProszę o kontakt w celu finalizacji.`;
+
+      window.location.href = `mailto:markediapl@gmail.com?subject=Zamówienie z koszyka - Markedia&body=${encodeURIComponent(emailBody)}`;
+    });
+  }
+
+  // Inicjalizacja UI
+  updateCartUI();
 }
 
 if (document.readyState === "loading") {

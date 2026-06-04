@@ -45,6 +45,10 @@
       <a class="icon-button" href="tel:+48732139599" aria-label="Zadzwon do Markedia">
         <i data-lucide="phone-call" aria-hidden="true"></i>
       </a>
+      <button class="icon-button cart-icon-btn" type="button" aria-label="Otwórz koszyk" data-cart-toggle>
+        <i data-lucide="shopping-cart" aria-hidden="true"></i>
+        <span class="cart-badge" data-cart-count>0</span>
+      </button>
     </header>
 
     <aside class="quick-actions" aria-label="Szybki kontakt">
@@ -320,6 +324,28 @@
         </div>
       </section>
     </main>
+
+    <div class="cart-overlay" data-cart-overlay aria-hidden="true"></div>
+    <aside class="cart-drawer" data-cart-drawer aria-hidden="true">
+      <div class="cart-drawer__header">
+        <h2>Twój koszyk</h2>
+        <button class="icon-button cart-drawer__close" type="button" aria-label="Zamknij koszyk" data-cart-toggle>
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="cart-drawer__body" data-cart-items>
+      </div>
+      <div class="cart-drawer__footer">
+        <div class="cart-summary">
+          <span>Razem:</span>
+          <strong data-cart-total>0 zł</strong>
+        </div>
+        <button class="btn btn--primary magnetic" type="button" data-cart-checkout>
+          <i data-lucide="credit-card" aria-hidden="true"></i>
+          <span>Przejdź do kasy</span>
+        </button>
+      </div>
+    </aside>
 
     <script
       src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"

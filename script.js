@@ -395,6 +395,38 @@ async function requestJson(url, options = {}) {
     return catalog;
   }
 
+
+  if (url === "/api/orders" && method === "GET") {
+    const orders = getLocalData("markedia-orders", []);
+    return { orders };
+  }
+
+  if (url === "/api/orders" && method === "POST") {
+    const payload = JSON.parse(options.body);
+    const date = new Date();
+    const stamp = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("");
+    const orderId = `MRK-${stamp}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+    const order = {
+      id: orderId,
+      createdAt: date.toISOString(),
+      status: "nowe",
+      items: payload.items || [],
+      total: payload.total || 0,
+      customer: payload.customer || {},
+      notes: payload.notes || ""
+    };
+
+    const orders = getLocalData("markedia-orders", []);
+    orders.unshift(order);
+    setLocalData("markedia-orders", orders.slice(0, 500));
+    return { order };
+  }
+
   if (url === "/api/banner-orders" && method === "GET") {
     const orders = getLocalData("markedia-orders", []);
     return { orders };
@@ -450,6 +482,41 @@ async function requestJson(url, options = {}) {
     if (orders.length === initialLen) throw new Error("Nie znaleziono zamówienia.");
     setLocalData("markedia-orders", orders);
     return { orders };
+  }
+
+
+  const orderPutMatch = url.match(/^\/api\/banner-orders\/([^\/]+)$/);
+  if (orderPutMatch && method === "PUT") {
+    const payload = JSON.parse(options.body);
+    let orders = getLocalData("markedia-orders", []);
+    const orderIndex = orders.findIndex(o => o.id === orderPutMatch[1]);
+
+    if (orderIndex === -1) throw new Error("Nie znaleziono zamówienia.");
+
+    orders[orderIndex] = { ...orders[orderIndex], ...payload, updatedAt: new Date().toISOString() };
+    setLocalData("markedia-orders", orders);
+    return { order: orders[orderIndex] };
+  }
+
+
+  const catalogPutMatch = url.match(/^\/api\/banner-catalog\/([^\/]+)$/);
+  if (catalogPutMatch && method === "PUT") {
+    const payload = JSON.parse(options.body);
+    let catalog = getLocalData("markedia-catalog", defaultCatalog);
+    const bannerIndex = catalog.banners.findIndex(b => b.id === catalogPutMatch[1]);
+
+    if (bannerIndex === -1) throw new Error("Nie znaleziono produktu w katalogu.");
+
+    // Obsługa dodania nowej kategorii w trakcie edycji
+    const category = (payload.category || catalog.banners[bannerIndex].category || "").trim();
+    if (category && !catalog.categories.some(c => c.toLowerCase() === category.toLowerCase())) {
+      catalog.categories.push(category);
+      catalog.categories.sort((a, b) => a.localeCompare(b, "pl"));
+    }
+
+    catalog.banners[bannerIndex] = { ...catalog.banners[bannerIndex], ...payload };
+    setLocalData("markedia-catalog", catalog);
+    return { banner: catalog.banners[bannerIndex], catalog };
   }
 
   throw new Error("Nie znaleziono endpointu.");
@@ -606,49 +673,133 @@ function initBannerAdmin() {
     renderAdmin();
   };
 
+
+  const updateCRMStats = () => {
+      const totalEl = document.querySelector('[data-crm-total-orders]');
+      const activeEl = document.querySelector('[data-crm-active-orders]');
+      const revenueEl = document.querySelector('[data-crm-total-revenue]');
+
+      if(!totalEl || !activeEl || !revenueEl) return;
+
+      totalEl.textContent = orders.length;
+
+      const activeOrders = orders.filter(o => o.status === 'nowe' || o.status === 'w_realizacji');
+      activeEl.textContent = activeOrders.length;
+
+      const revenue = orders.reduce((sum, o) => {
+          if (o.status === 'anulowane') return sum;
+          // Calculate total from items if available, else from legacy format or total field
+          let orderTotal = 0;
+          if(o.total) {
+              orderTotal = Number(o.total);
+          } else if (o.items && o.items.length > 0) {
+              orderTotal = o.items.reduce((s, item) => s + (Number(item.price) || 0), 0);
+          }
+          return sum + orderTotal;
+      }, 0);
+
+      revenueEl.textContent = `${revenue} zł`;
+  };
+
   const renderOrders = () => {
-    if (!orderList) return;
+    orderList.innerHTML = orders.map(order => {
+        let itemsHtml = '';
+        let total = 0;
+        let customerInfo = '';
 
-    orderList.innerHTML = orders.length
-      ? orders
-          .map((order) => {
-            const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleString("pl-PL") : "brak daty";
-            return `
-              <article class="admin-order-item">
-                <div class="admin-order-item__top">
-                  <strong>${escapeHTML(order.id)}</strong>
-                  <span>${escapeHTML(order.status || "nowe")}</span>
+        if (order.items && order.items.length > 0) {
+            // New order format from cart
+            itemsHtml = order.items.map(item => `
+                <div style="font-size: 0.9rem; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                    <strong>${item.title}</strong> (${item.price} zł)
+                    <ul style="margin: 0.2rem 0 0 1rem; color: var(--muted); list-style: circle;">
+                        ${Object.entries(item.config || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('')}
+                    </ul>
                 </div>
-                <h3>${escapeHTML(order.selectedBanner || order.template || "Baner")}</h3>
-                <p>${escapeHTML(order.format || "200 x 100 cm")} • ${escapeHTML(order.quantity || "1")} szt. • ${escapeHTML(order.deadline || "Standardowy")}</p>
-                <p><b>${escapeHTML(order.contact || "brak kontaktu")}</b>${order.email ? ` / ${escapeHTML(order.email)}` : ""} / ${escapeHTML(order.phone || "")}</p>
-                <p>${escapeHTML(order.title || "")}</p>
-                ${order.notes ? `<small>${escapeHTML(order.notes)}</small>` : ""}
-                <div class="admin-order-item__bottom">
-                  <time>${escapeHTML(createdAt)}</time>
-                  <button type="button" data-delete-order="${escapeHTML(order.id)}">Usuń</button>
+            `).join('');
+            total = order.total;
+            customerInfo = `${order.customer?.contact || ''} <br> ${order.customer?.email || ''} <br> ${order.customer?.phone || ''}`;
+        } else {
+            // Legacy format
+            itemsHtml = `
+                <div style="font-size: 0.9rem;">
+                    <strong>${order.title}</strong><br>
+                    Wzór: ${order.template}<br>
+                    Ilość: ${order.quantity}
                 </div>
-              </article>
             `;
-          })
-          .join("")
-      : '<p class="catalog-empty is-visible">Nie ma jeszcze zapisanych zamówień.</p>';
-
-    orderList.querySelectorAll("[data-delete-order]").forEach((button) => {
-      button.addEventListener("click", async () => {
-        if (!window.confirm("Usunąć to zamówienie z kolejki?")) return;
-
-        try {
-          const data = await requestJson(`/api/banner-orders/${button.dataset.deleteOrder}`, { method: "DELETE" });
-          orders = Array.isArray(data.orders) ? data.orders : [];
-          renderOrders();
-          setStatus("Zamówienie usunięte.", "ok");
-        } catch (error) {
-          setStatus(error.message, "error");
+            total = 'N/A';
+            customerInfo = `${order.contact || ''} <br> ${order.phone || ''}`;
         }
-      });
+
+        const date = new Date(order.createdAt).toLocaleString("pl-PL");
+
+        return `
+          <article class="admin-item" style="display: flex; flex-direction: column; gap: 1rem; align-items: stretch;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                <div>
+                    <h3 style="margin-bottom: 0.2rem;">Zamówienie ${order.id}</h3>
+                    <p class="admin-item__meta" style="margin: 0;">${date}</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <select class="admin-order-status" data-order-id="${order.id}" style="padding: 0.5rem; border-radius: 4px; background: var(--paper); color: var(--foreground); border: 1px solid var(--border);">
+                        <option value="nowe" ${order.status === 'nowe' ? 'selected' : ''}>Nowe</option>
+                        <option value="w_realizacji" ${order.status === 'w_realizacji' ? 'selected' : ''}>W realizacji</option>
+                        <option value="zakonczone" ${order.status === 'zakonczone' ? 'selected' : ''}>Zakończone</option>
+                        <option value="anulowane" ${order.status === 'anulowane' ? 'selected' : ''}>Anulowane</option>
+                    </select>
+                    <button class="icon-button" type="button" data-admin-delete-order="${order.id}" aria-label="Usuń">
+                      <i data-lucide="trash-2" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <p class="eyebrow" style="margin-bottom: 0.5rem;">Klient</p>
+                    <p style="margin: 0; font-size: 0.9rem;">${customerInfo}</p>
+                    ${order.notes || order.customer?.notes ? `
+                        <p class="eyebrow" style="margin-top: 1rem; margin-bottom: 0.5rem;">Uwagi</p>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--muted);">${order.notes || order.customer?.notes}</p>
+                    ` : ''}
+                </div>
+                <div>
+                    <p class="eyebrow" style="margin-bottom: 0.5rem;">Produkty</p>
+                    ${itemsHtml}
+                    <div style="margin-top: 1rem; font-weight: bold; text-align: right;">
+                        Suma: ${total} zł
+                    </div>
+                </div>
+            </div>
+          </article>
+        `;
+    }).join("");
+
+    if (window.lucide) window.lucide.createIcons();
+    updateCRMStats();
+
+    // Attach status change listeners
+    document.querySelectorAll('.admin-order-status').forEach(select => {
+        select.addEventListener('change', async (e) => {
+            const orderId = e.target.dataset.orderId;
+            const newStatus = e.target.value;
+
+            try {
+                setStatus("Aktualizacja statusu...", "loading");
+                await requestJson(`/api/banner-orders/${orderId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                setStatus("Status zaktualizowany", "success");
+                await loadOrders();
+            } catch(err) {
+                setStatus(err.message, "error");
+                e.target.value = orders.find(o => o.id === orderId).status; // revert
+            }
+        });
     });
   };
+
 
   const loadOrders = async () => {
     if (!orderList) return;
@@ -822,6 +973,7 @@ function initCart() {
     localStorage.setItem("markedia-cart", JSON.stringify(cartState.items));
   }
 
+
   function toggleCart() {
     if (!drawer || !overlay) return;
     const isOpen = drawer.classList.contains("is-open");
@@ -832,6 +984,16 @@ function initCart() {
       overlay.setAttribute("aria-hidden", "true");
       drawer.setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
+
+      // Reset view when closing
+      const itemsBody = drawer.querySelector('[data-cart-items]');
+      const footer = drawer.querySelector('.cart-drawer__footer');
+      const checkoutView = drawer.querySelector('[data-cart-checkout-view]');
+      if(checkoutView) {
+          checkoutView.remove();
+          if(itemsBody) itemsBody.style.display = 'flex';
+          if(footer) footer.style.display = 'block';
+      }
     } else {
       drawer.classList.add("is-open");
       overlay.classList.add("is-open");
@@ -840,6 +1002,106 @@ function initCart() {
       document.body.style.overflow = "hidden";
     }
   }
+
+  function showCheckoutForm() {
+      const itemsBody = drawer.querySelector('[data-cart-items]');
+      const footer = drawer.querySelector('.cart-drawer__footer');
+
+      if(itemsBody) itemsBody.style.display = 'none';
+      if(footer) footer.style.display = 'none';
+
+      const checkoutHtml = `
+        <div class="cart-checkout-view" data-cart-checkout-view style="padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;">
+            <h3>Dokończ zamówienie</h3>
+            <form id="checkout-form" class="banner-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <span>Imię i nazwisko / Firma *</span>
+                    <input type="text" name="contact" required style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground);" />
+                </label>
+                <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <span>Email *</span>
+                    <input type="email" name="email" required style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground);" />
+                </label>
+                <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <span>Telefon *</span>
+                    <input type="tel" name="phone" required style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground);" />
+                </label>
+                <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <span>Uwagi (np. dane do FV)</span>
+                    <textarea name="notes" rows="3" style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground);"></textarea>
+                </label>
+                <div class="cart-summary" style="padding-top: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between;">
+                    <span>Do zapłaty:</span>
+                    <strong>${cartState.items.reduce((sum, item) => sum + item.price, 0)} zł netto</strong>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" class="btn btn--outline" id="cancel-checkout" style="flex: 1;">Wróć</button>
+                    <button type="submit" class="btn btn--primary magnetic" style="flex: 1;">Wyślij</button>
+                </div>
+            </form>
+        </div>
+      `;
+
+      const checkoutContainer = document.createElement('div');
+      checkoutContainer.innerHTML = checkoutHtml;
+
+      if (itemsBody && itemsBody.parentNode) {
+          itemsBody.parentNode.insertBefore(checkoutContainer.firstElementChild, footer);
+      }
+
+      document.getElementById('cancel-checkout').addEventListener('click', () => {
+          const view = drawer.querySelector('[data-cart-checkout-view]');
+          if(view) view.remove();
+          if(itemsBody) itemsBody.style.display = 'flex';
+          if(footer) footer.style.display = 'block';
+      });
+
+      document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const fd = new FormData(e.target);
+          const customerData = Object.fromEntries(fd.entries());
+
+          try {
+              const submitBtn = e.target.querySelector('button[type="submit"]');
+              submitBtn.textContent = 'Wysyłanie...';
+              submitBtn.disabled = true;
+
+              await requestJson('/api/orders', {
+                  method: 'POST',
+                  body: JSON.stringify({
+                      items: cartState.items,
+                      total: cartState.items.reduce((sum, item) => sum + item.price, 0),
+                      customer: customerData,
+                      notes: customerData.notes
+                  })
+              });
+
+              cartState.items = [];
+              saveCart();
+              updateCartUI();
+
+              drawer.querySelector('[data-cart-checkout-view]').innerHTML = `
+                <div style="text-align: center; padding: 3rem 1rem;">
+                    <i data-lucide="check-circle" style="width: 64px; height: 64px; color: #22c55e; margin-bottom: 1.5rem; display: inline-block;"></i>
+                    <h3 style="margin-bottom: 1rem;">Zamówienie wysłane!</h3>
+                    <p style="color: var(--muted); line-height: 1.6;">Dziękujemy! Otrzymaliśmy Twoje zamówienie. Skontaktujemy się z Tobą najszybciej jak to możliwe w celu omówienia szczegółów.</p>
+                </div>
+              `;
+              if (window.lucide) window.lucide.createIcons();
+
+              setTimeout(() => {
+                  toggleCart();
+              }, 5000);
+
+          } catch(err) {
+              alert('Błąd: ' + err.message);
+              const submitBtn = e.target.querySelector('button[type="submit"]');
+              submitBtn.textContent = 'Wyślij';
+              submitBtn.disabled = false;
+          }
+      });
+  }
+
 
   function updateCartUI() {
     if (!cartItemsContainer || !cartTotal || !cartCounts) return;

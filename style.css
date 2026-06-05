@@ -4251,3 +4251,210 @@ h3 {
     text-align: right;
   }
 }
+
+/* CONFIGURATOR STYLES */
+.config-page .banner-hero {
+  min-height: calc(75vh - 96px);
+}
+
+.configurator-illustration {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1/1;
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: rgba(106, 13, 173, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.illustration-icon {
+  width: 120px;
+  height: 120px;
+  color: var(--ice);
+  filter: drop-shadow(0 0 20px rgba(190, 225, 247, 0.4));
+  z-index: 2;
+}
+
+.illustration-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, var(--purple) 0%, transparent 70%);
+  filter: blur(40px);
+  z-index: 1;
+  animation: pulseGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGlow {
+  0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
+  100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.config-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.config-categories button {
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #f7f7f7;
+  color: var(--ink);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.config-categories button:hover {
+  background: rgba(106, 13, 173, 0.1);
+  border-color: var(--purple);
+}
+
+.config-categories button.is-active {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+  box-shadow: 0 4px 15px rgba(106, 13, 173, 0.3);
+}
+
+.config-dynamic-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: rgba(106, 13, 173, 0.03);
+  border: 1px dashed rgba(106, 13, 173, 0.2);
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .config-dynamic-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.config-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-field-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.config-field-group label {
+  font-weight: 900;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.config-field-group select,
+.config-field-group input[type="text"],
+.config-field-group input[type="number"] {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 700;
+  outline: none;
+}
+
+.config-field-group select:focus,
+.config-field-group input:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.1);
+}
+
+.config-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  user-select: none;
+}
+
+.config-checkbox-wrapper input[type="checkbox"] {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  background: #fff;
+}
+
+.config-checkbox-wrapper input[type="checkbox"]:checked {
+  background: var(--purple);
+  border-color: var(--purple);
+}
+
+.config-checkbox-wrapper input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.config-recap-options {
+  grid-column: 1 / -1;
+  margin-top: -5px;
+  margin-bottom: 10px;
+}
+
+.config-recap-option-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.05);
+}
+
+.config-recap-option-item span:last-child {
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.config-add-to-cart {
+  width: 100%;
+  margin-top: 20px;
+  min-height: 56px;
+  font-size: 1.1rem;
+}
+
+.config-status-msg {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  margin-top: 12px;
+  min-height: 20px;
+  color: #167a3d;
+}
+
+.config-status-msg.error {
+  color: #bd1f36;
+}

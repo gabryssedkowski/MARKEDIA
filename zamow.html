@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Zamow baner w Markedia. Wybierz szablon, format, wpisz tresc i przygotuj brief do projektu reklamowego."
+    />
+    <title>Zamów baner - Markedia</title>
+    <link rel="icon" href="assets/MARKEDIA-LOGO.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800;900&family=Urbanist:wght@400;500;600;700;800;900&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="is-loading banner-page">
+    <div class="loader" aria-hidden="true">
+      <img src="assets/MARKEDIA-LOGO-WHITE.svg" alt="" />
+      <div class="loader__bar"><span></span></div>
+    </div>
+
+    <div class="cursor-light" aria-hidden="true"></div>
+    <div class="site-noise" aria-hidden="true"></div>
+    <canvas class="motion-field" aria-hidden="true"></canvas>
+    <div class="scroll-progress" aria-hidden="true"><span></span></div>
+
+    <header class="site-header" data-header>
+      <a class="brand" href="index.html" aria-label="Markedia - strona glowna">
+        <img src="assets/MARKEDIA-LOGO.svg" alt="Markedia" />
+      </a>
+      <nav class="nav" id="site-nav" aria-label="Nawigacja glowna">
+        <a href="index.html#uslugi">Usługi</a>
+        <a href="zamow.html" class="is-active">Zamów</a>
+        <a href="index.html#realizacje">Realizacje</a>
+        <a href="index.html#proces">Proces</a>
+        <a href="index.html#kontakt">Kontakt</a>
+      </nav>
+      <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Otworz menu">
+        <i data-lucide="menu" aria-hidden="true"></i>
+      </button>
+      <a class="icon-button" href="tel:+48732139599" aria-label="Zadzwon do Markedia">
+        <i data-lucide="phone-call" aria-hidden="true"></i>
+      </a>
+      <button class="icon-button cart-icon-btn" type="button" aria-label="Otwórz koszyk" data-cart-toggle>
+        <i data-lucide="shopping-cart" aria-hidden="true"></i>
+        <span class="cart-badge" data-cart-count>0</span>
+      </button>
+    </header>
+
+    <aside class="quick-actions" aria-label="Szybki kontakt">
+      <a href="mailto:markediapl@gmail.com" aria-label="Napisz email">
+        <i data-lucide="mail" aria-hidden="true"></i>
+      </a>
+      <a href="tel:+48732139599" aria-label="Zadzwon">
+        <i data-lucide="phone" aria-hidden="true"></i>
+      </a>
+      <a href="#zamowienie" aria-label="Przejdz do zamowienia">
+        <i data-lucide="shopping-bag" aria-hidden="true"></i>
+      </a>
+    </aside>
+
+    <main>
+      <section class="banner-hero">
+        <div class="banner-hero__copy reveal">
+          <p class="eyebrow">Konfigurator usług</p>
+          <h1>Skomponuj projekt na miarę.</h1>
+          <p>
+            Wybierz usługę, określ swoje potrzeby i dodaj projekt do koszyka. Od razu poznasz orientacyjną cenę i termin realizacji.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary magnetic" href="#konfigurator">
+              <i data-lucide="settings-2" aria-hidden="true"></i>
+              <span>Rozpocznij konfigurację</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="banner-preview-shell reveal" aria-label="Szybki wybór popularnych pakietów">
+          <div class="quick-picks-grid">
+            <div class="quick-pick tilt-card" onclick="document.querySelector('#konfigurator').scrollIntoView({behavior: 'smooth'})">
+              <i data-lucide="badge-check" aria-hidden="true"></i>
+              <h3>Logo & Brand</h3>
+              <p>Od 999 zł</p>
+            </div>
+            <div class="quick-pick tilt-card" onclick="document.querySelector('#konfigurator').scrollIntoView({behavior: 'smooth'})">
+              <i data-lucide="megaphone" aria-hidden="true"></i>
+              <h3>Social Media</h3>
+              <p>Od 499 zł</p>
+            </div>
+            <div class="quick-pick tilt-card" onclick="document.querySelector('#konfigurator').scrollIntoView({behavior: 'smooth'})">
+              <i data-lucide="printer" aria-hidden="true"></i>
+              <h3>Druk & Print</h3>
+              <p>Od 299 zł</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section configurator" id="konfigurator" aria-labelledby="configurator-title">
+        <div class="section__intro reveal">
+          <p class="eyebrow">Konfigurator</p>
+          <h2 id="configurator-title">Wybierz usługę i dostosuj opcje.</h2>
+        </div>
+
+        <div class="configurator-layout reveal">
+          <div class="configurator-main">
+            <!-- Wybór kategorii -->
+            <div class="config-step">
+              <div class="config-step__header">
+                <span class="step-number">1</span>
+                <h3>Czego potrzebujesz?</h3>
+              </div>
+              <div class="service-categories" data-service-categories>
+                <button class="category-card is-active" type="button" data-category="logo">
+                  <i data-lucide="hexagon"></i>
+                  <span>Logo / Brand</span>
+                </button>
+                <button class="category-card" type="button" data-category="baner">
+                  <i data-lucide="layout-template"></i>
+                  <span>Baner</span>
+                </button>
+                <button class="category-card" type="button" data-category="wizytowka">
+                  <i data-lucide="contact"></i>
+                  <span>Wizytówka</span>
+                </button>
+                <button class="category-card" type="button" data-category="ulotka">
+                  <i data-lucide="file-text"></i>
+                  <span>Ulotka</span>
+                </button>
+                <button class="category-card" type="button" data-category="social">
+                  <i data-lucide="instagram"></i>
+                  <span>Social Media</span>
+                </button>
+                <button class="category-card" type="button" data-category="www">
+                  <i data-lucide="monitor"></i>
+                  <span>Strona WWW</span>
+                </button>
+                <button class="category-card" type="button" data-category="inne">
+                  <i data-lucide="sparkles"></i>
+                  <span>Inne</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Opcje konfiguracji -->
+            <div class="config-step">
+              <div class="config-step__header">
+                <span class="step-number">2</span>
+                <h3>Dopasuj opcje</h3>
+              </div>
+              <div class="config-options" data-config-options>
+                <!-- Dynamicznie ładowane z JS -->
+              </div>
+            </div>
+
+            <!-- Informacje dodatkowe -->
+            <div class="config-step">
+              <div class="config-step__header">
+                <span class="step-number">3</span>
+                <h3>Dodatkowe uwagi</h3>
+              </div>
+              <div class="config-details">
+                <label>
+                  <span>Nazwa firmy / Marki</span>
+                  <input type="text" id="config-brand-name" placeholder="Wpisz nazwę dla projektu..." />
+                </label>
+                <label>
+                  <span>Opisz krótko swoje oczekiwania</span>
+                  <textarea id="config-details-text" rows="4" placeholder="Np. preferowana kolorystyka, przykłady konkurencji, specjalne wymagania..."></textarea>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sticky Sidebar z podsumowaniem -->
+          <aside class="configurator-sidebar">
+            <div class="summary-card">
+              <h3>Podsumowanie zamówienia</h3>
+              <div class="summary-details">
+                <div class="summary-row">
+                  <span>Wybrany produkt:</span>
+                  <strong data-summary-title>Logo / Brand</strong>
+                </div>
+                <div class="summary-options-list" data-summary-options>
+                  <!-- Wybrane opcje (JS) -->
+                </div>
+                <div class="summary-row summary-row--time">
+                  <span>Przewidywany termin:</span>
+                  <strong data-summary-time>7-14 dni roboczych</strong>
+                </div>
+              </div>
+              <div class="summary-total">
+                <span>Orientacyjna cena:</span>
+                <strong data-summary-price>999 zł</strong>
+              </div>
+              <button class="btn btn--primary magnetic summary-btn" type="button" data-config-add-to-cart>
+                <i data-lucide="shopping-cart" aria-hidden="true"></i>
+                <span>Dodaj do koszyka</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <!-- Powiadomienie Toast -->
+    <div class="toast-notification" aria-hidden="true" data-toast>
+      <i data-lucide="check-circle-2"></i>
+      <div>
+        <strong>Dodano do koszyka</strong>
+        <span>Przejdź do koszyka, aby złożyć zamówienie.</span>
+      </div>
+    </div>
+
+    <div class="cart-overlay" data-cart-overlay aria-hidden="true"></div>
+    <aside class="cart-drawer" data-cart-drawer aria-hidden="true">
+      <div class="cart-drawer__header">
+        <h2>Twój koszyk</h2>
+        <button class="icon-button cart-drawer__close" type="button" aria-label="Zamknij koszyk" data-cart-toggle>
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="cart-drawer__body" data-cart-items>
+      </div>
+      <div class="cart-drawer__footer">
+        <div class="cart-summary">
+          <span>Razem:</span>
+          <strong data-cart-total>0 zł</strong>
+        </div>
+        <button class="btn btn--primary magnetic" type="button" data-cart-checkout>
+          <i data-lucide="credit-card" aria-hidden="true"></i>
+          <span>Przejdź do kasy</span>
+        </button>
+      </div>
+    </aside>
+
+    <script
+      src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"
+      async
+      onload="window.lucide && window.lucide.createIcons()"
+    ></script>
+    <script src="script.js"></script>
+  </body>
+</html>

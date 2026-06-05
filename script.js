@@ -226,8 +226,7 @@ const ready = () => {
     });
   });
 
-  initBannerConfigurator();
-  initBannerCatalog();
+  initServiceConfigurator();
   initBannerAdmin();
   initCart();
 
@@ -274,273 +273,290 @@ const ready = () => {
   initMotionField();
 };
 
-function initBannerConfigurator() {
-  const form = document.querySelector("[data-order-form]");
-  const previews = document.querySelectorAll("[data-banner-preview]");
-  const summary = document.querySelector("[data-banner-summary]");
-  const selectedBannerInput = document.querySelector("[data-selected-banner]");
-  const formatButtons = document.querySelectorAll("[data-banner-format]");
-  const templateButtons = document.querySelectorAll("[data-template]");
-  const customSize = document.querySelector("[data-custom-size]");
-  const customWidth = document.querySelector("[data-custom-width]");
-  const customHeight = document.querySelector("[data-custom-height]");
-  const orderStatus = document.querySelector("[data-order-status]");
-  const orderSelectionTitle = document.querySelector("[data-selected-template-title]");
-  const orderSelectionMeta = document.querySelector("[data-selected-template-meta]");
-  const orderRecaps = document.querySelectorAll("[data-order-recap]");
-  const orderFlow = document.querySelectorAll(".order-flow span");
-  const previewFields = {
-    title: document.querySelectorAll("[data-preview-title]"),
-    subtitle: document.querySelectorAll("[data-preview-subtitle]"),
-    size: document.querySelectorAll("[data-preview-size]"),
-  };
+function initServiceConfigurator() {
+  const categories = document.querySelectorAll("[data-category]");
+  const optionsContainer = document.querySelector("[data-config-options]");
+  const summaryTitle = document.querySelector("[data-summary-title]");
+  const summaryPrice = document.querySelector("[data-summary-price]");
+  const summaryTime = document.querySelector("[data-summary-time]");
+  const summaryOptionsContainer = document.querySelector("[data-summary-options]");
+  const addToCartBtn = document.querySelector("[data-config-add-to-cart]");
+  const toast = document.querySelector("[data-toast]");
 
-  if (!previews.length || !summary) return;
+  if (!optionsContainer) return;
 
-  const setPreviewText = (nodes, value) => {
-    nodes.forEach((node) => {
-      node.textContent = value;
-    });
-  };
-
-  const templateCopy = {
-    promo: {
-      title: "SPRZEDAM",
-      subtitle: "600 265 203",
-      theme: "sale",
+  const servicesData = {
+    logo: {
+      name: "Logo / Brand",
+      basePrice: 999,
+      baseTime: "7-14 dni roboczych",
+      options: [
+        { id: "variants", type: "select", label: "Liczba wariantów projektu", choices: [
+          { value: "1", label: "1 wariant", price: 0 },
+          { value: "2", label: "2 warianty", price: 300 },
+          { value: "3", label: "3 warianty", price: 500 }
+        ]},
+        { id: "revisions", type: "select", label: "Liczba tur poprawek", choices: [
+          { value: "2", label: "2 tury (Standard)", price: 0 },
+          { value: "4", label: "4 tury", price: 200 },
+          { value: "unlimited", label: "Bez limitu", price: 600 }
+        ]},
+        { id: "express", type: "toggle", label: "Ekspresowa realizacja", desc: "+ 50% ceny, projekt w 3 dni", priceMultiplier: 0.5 },
+        { id: "brandbook", type: "toggle", label: "Księga Znaku (Brandbook)", desc: "Szczegółowa instrukcja marki", price: 500 }
+      ]
     },
-    premium: {
-      title: "Usługa premium",
-      subtitle: "Elegancki baner dla marki, która chce wyglądać pewnie i profesjonalnie.",
-      theme: "premium",
+    baner: {
+      name: "Baner",
+      basePrice: 299,
+      baseTime: "3-5 dni roboczych",
+      options: [
+        { id: "size", type: "select", label: "Format banera", choices: [
+          { value: "200x100", label: "200 x 100 cm", price: 0 },
+          { value: "300x100", label: "300 x 100 cm", price: 100 },
+          { value: "custom", label: "Własny format", price: 50 }
+        ]},
+        { id: "print", type: "toggle", label: "Przygotowanie do druku (DTP)", desc: "Spady, marginesy, profil CMYK", price: 50 },
+        { id: "express", type: "toggle", label: "Ekspresowa realizacja", desc: "Projekt na jutro", price: 150 }
+      ]
     },
-    event: {
-      title: "Noc pełna emocji",
-      subtitle: "Zapowiedź wydarzenia, koncertu, premiery albo otwarcia lokalu.",
-      theme: "event",
+    wizytowka: {
+      name: "Wizytówka",
+      basePrice: 249,
+      baseTime: "3-5 dni roboczych",
+      options: [
+        { id: "sides", type: "select", label: "Strony", choices: [
+          { value: "1", label: "Jednostronna", price: 0 },
+          { value: "2", label: "Dwustronna", price: 50 }
+        ]},
+        { id: "premium", type: "toggle", label: "Projekt Premium", desc: "Tłoczenie, UV, złocenia (projekt)", price: 100 }
+      ]
     },
-    local: {
-      title: "Tu działa Twoja firma",
-      subtitle: "Czytelny baner dla lokalnego biznesu, sklepu lub punktu usługowego.",
-      theme: "local",
+    ulotka: {
+      name: "Ulotka",
+      basePrice: 349,
+      baseTime: "4-7 dni roboczych",
+      options: [
+        { id: "format", type: "select", label: "Format", choices: [
+          { value: "A5", label: "A5", price: 0 },
+          { value: "A4", label: "A4", price: 50 },
+          { value: "DL", label: "DL (składana)", price: 100 }
+        ]},
+        { id: "print", type: "toggle", label: "Przygotowanie DTP", desc: "Pliki produkcyjne pod konkretną drukarnię", price: 50 }
+      ]
     },
-    minimal: {
-      title: "Mniej słów. Więcej efektu.",
-      subtitle: "Minimalny układ z dużym kontrastem i jednym mocnym komunikatem.",
-      theme: "minimal",
+    social: {
+      name: "Social Media",
+      basePrice: 499,
+      baseTime: "5-10 dni roboczych",
+      options: [
+        { id: "posts", type: "select", label: "Pakiet postów", choices: [
+          { value: "3", label: "3 szablony postów", price: 0 },
+          { value: "6", label: "6 szablonów", price: 300 },
+          { value: "9", label: "9 szablonów", price: 550 }
+        ]},
+        { id: "animation", type: "toggle", label: "Dodatkowa animacja (Reels)", desc: "Prosta animacja logo/tekstu", price: 250 },
+        { id: "templates", type: "toggle", label: "Pliki źródłowe (Canva/PSD)", desc: "Edytowalne szablony", price: 200 }
+      ]
     },
-    recruit: {
-      title: "Dołącz do zespołu",
-      subtitle: "Baner rekrutacyjny, który brzmi konkretnie i wygląda nowocześnie.",
-      theme: "recruit",
+    www: {
+      name: "Strona WWW",
+      basePrice: 1999,
+      baseTime: "14-30 dni roboczych",
+      options: [
+        { id: "pages", type: "select", label: "Wielkość strony", choices: [
+          { value: "lp", label: "Landing Page (One-page)", price: 0 },
+          { value: "multi", label: "Strona firmowa (do 5 podstron)", price: 1000 },
+          { value: "shop", label: "E-commerce (sklep internetowy)", price: 3000 }
+        ]},
+        { id: "seo", type: "toggle", label: "Podstawowe SEO", desc: "Optymalizacja tagów i struktury pod Google", price: 400 },
+        { id: "lang", type: "toggle", label: "Dodatkowa wersja językowa", desc: "Przełącznik i integracja", price: 500 }
+      ]
     },
-  };
-
-  const inputs = {
-    title: document.querySelector('[data-preview-input="title"]'),
-    subtitle: document.querySelector('[data-preview-input="subtitle"]'),
-  };
-  const orderInputs = {
-    contact: document.querySelector('[data-order-input="contact"]'),
-    email: document.querySelector('[data-order-input="email"]'),
-    quantity: document.querySelector('[data-order-input="quantity"]'),
-    deadline: document.querySelector('[data-order-input="deadline"]'),
-    notes: document.querySelector('[data-order-input="notes"]'),
-  };
-
-  let selectedBannerLabel = selectedBannerInput?.value || "Startowy baner SPRZEDAM";
-
-  const getSelectedTemplate = () => document.querySelector("[data-template].is-active strong")?.textContent.trim() || "Sprzedam";
-
-  const getSelectedFormat = () => {
-    const active = document.querySelector("[data-banner-format].is-active")?.dataset.bannerFormat || "200 x 100 cm";
-    if (active !== "własny wymiar") return active;
-
-    const width = customWidth?.value.trim();
-    const height = customHeight?.value.trim();
-    return width && height ? `${width} x ${height} cm` : "własny wymiar";
-  };
-
-  const setOrderStatus = (message = "", type = "") => {
-    if (!orderStatus) return;
-    orderStatus.textContent = message;
-    orderStatus.classList.toggle("is-ok", type === "ok");
-    orderStatus.classList.toggle("is-error", type === "error");
-  };
-
-  const setRecap = (name, value) => {
-    orderRecaps.forEach((node) => {
-      if (node.dataset.orderRecap === name) node.textContent = value;
-    });
-  };
-
-  const updateOrderProgress = () => {
-    const hasContact = Boolean(orderInputs.contact?.value.trim());
-    const hasPhone = Boolean(inputs.subtitle?.value.trim());
-    const activeStep = hasContact && hasPhone ? 2 : hasContact || hasPhone ? 1 : 0;
-
-    orderFlow.forEach((step, index) => {
-      step.classList.toggle("is-active", index <= activeStep);
-    });
-  };
-
-  const updateSummary = () => {
-    const selectedTemplate = getSelectedTemplate();
-    const selectedFormat = getSelectedFormat();
-    const summaryRows = [
-      `Szablon: ${selectedTemplate}`,
-      `Wybrany wzór: ${selectedBannerLabel}`,
-      `Format: ${selectedFormat}`,
-      "Materiał: trwały baner hard solvent",
-      "Wykończenie: zgrzewane krawędzie, oczka co 50 cm",
-      `Hasło: ${inputs.title?.value || ""}`,
-      `Telefon: ${inputs.subtitle?.value || ""}`,
-      `Kontakt: ${orderInputs.contact?.value || ""}`,
-      `Email: ${orderInputs.email?.value || ""}`,
-      `Ilość: ${orderInputs.quantity?.value || "1"}`,
-      `Termin: ${orderInputs.deadline?.value || "Standardowy"}`,
-      `Uwagi: ${orderInputs.notes?.value || ""}`,
-    ];
-
-    summary.value = summaryRows.join("\n");
-    setRecap("template", selectedBannerLabel);
-    setRecap("format", selectedFormat);
-    setRecap("contact", orderInputs.contact?.value ? `${orderInputs.contact.value}${inputs.subtitle?.value ? ` / ${inputs.subtitle.value}` : ""}` : "Uzupełnij kontakt");
-    setRecap("deadline", `${orderInputs.deadline?.value || "Standardowy"} / ${orderInputs.quantity?.value || "1"} szt.`);
-    if (orderSelectionTitle) orderSelectionTitle.textContent = selectedBannerLabel;
-    if (orderSelectionMeta) {
-      orderSelectionMeta.textContent = `${selectedFormat} / hard solvent / zgrzew + oczka co 50 cm`;
+    inne: {
+      name: "Inny projekt",
+      basePrice: 199,
+      baseTime: "Do ustalenia",
+      options: [
+        { id: "consultation", type: "toggle", label: "Wymaga konsultacji wideo", desc: "Rozmowa z projektantem", price: 150 }
+      ]
     }
-    updateOrderProgress();
   };
 
-  const updatePreview = () => {
-    setPreviewText(previewFields.title, inputs.title?.value || "SPRZEDAM");
-    setPreviewText(previewFields.subtitle, inputs.subtitle?.value || "600 265 203");
+  let currentCategory = "logo";
+  let currentSelections = {};
+
+  function renderOptions(categoryId) {
+    const service = servicesData[categoryId];
+    if (!service) return;
+
+    optionsContainer.innerHTML = "";
+    currentSelections = {};
+
+    service.options.forEach((opt) => {
+      if (opt.type === "select") {
+        currentSelections[opt.id] = opt.choices[0]; // domyślnie pierwszy
+        const optionsHtml = opt.choices.map(choice =>
+          `<option value="${choice.value}">${choice.label}${choice.price > 0 ? ` (+${choice.price} zł)` : ""}</option>`
+        ).join("");
+
+        optionsContainer.insertAdjacentHTML("beforeend", `
+          <div class="option-group">
+            <label for="opt-${opt.id}">${opt.label}</label>
+            <select id="opt-${opt.id}" class="styled-select" data-option-id="${opt.id}">
+              ${optionsHtml}
+            </select>
+          </div>
+        `);
+      } else if (opt.type === "toggle") {
+        currentSelections[opt.id] = false;
+        optionsContainer.insertAdjacentHTML("beforeend", `
+          <label class="option-toggle" for="opt-${opt.id}">
+            <input type="checkbox" id="opt-${opt.id}" data-option-id="${opt.id}" />
+            <div class="toggle-info">
+              <strong>${opt.label}</strong>
+              <small>${opt.desc}</small>
+              ${opt.price ? `<span>+${opt.price} zł</span>` : ""}
+              ${opt.priceMultiplier ? `<span>+${opt.priceMultiplier * 100}%</span>` : ""}
+            </div>
+            <div class="toggle-switch"></div>
+          </label>
+        `);
+      }
+    });
+
+    if(window.lucide) {
+      window.lucide.createIcons();
+    }
+
+    bindOptionEvents();
     updateSummary();
-  };
+  }
 
-  Object.values(inputs).forEach((input) => {
-    input?.addEventListener("input", updatePreview);
-  });
+  function bindOptionEvents() {
+    optionsContainer.querySelectorAll("select").forEach(select => {
+      select.addEventListener("change", (e) => {
+        const id = e.target.dataset.optionId;
+        const service = servicesData[currentCategory];
+        const optionDef = service.options.find(o => o.id === id);
+        currentSelections[id] = optionDef.choices.find(c => c.value === e.target.value);
+        updateSummary();
+      });
+    });
 
-  Object.values(orderInputs).forEach((input) => {
-    input?.addEventListener("input", updateSummary);
-    input?.addEventListener("change", updateSummary);
-  });
+    optionsContainer.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+      checkbox.addEventListener("change", (e) => {
+        const id = e.target.dataset.optionId;
+        currentSelections[id] = e.target.checked;
+        updateSummary();
+      });
+    });
+  }
 
-  [customWidth, customHeight].forEach((input) => {
-    input?.addEventListener("input", () => {
-      setPreviewText(previewFields.size, getSelectedFormat());
-      updateSummary();
+  function updateSummary() {
+    const service = servicesData[currentCategory];
+    let total = service.basePrice;
+    let multiplier = 0;
+    summaryOptionsContainer.innerHTML = "";
+
+    summaryTitle.textContent = service.name;
+    summaryTime.textContent = service.baseTime;
+
+    service.options.forEach((opt) => {
+      const selected = currentSelections[opt.id];
+      if (opt.type === "select" && selected) {
+        total += selected.price;
+        if(selected.price > 0) {
+           summaryOptionsContainer.insertAdjacentHTML("beforeend", `
+            <div class="summary-option-item">
+              <span>${opt.label}: ${selected.label}</span>
+              <span>+${selected.price} zł</span>
+            </div>
+          `);
+        }
+      } else if (opt.type === "toggle" && selected) {
+        if (opt.price) {
+          total += opt.price;
+          summaryOptionsContainer.insertAdjacentHTML("beforeend", `
+            <div class="summary-option-item">
+              <span>${opt.label}</span>
+              <span>+${opt.price} zł</span>
+            </div>
+          `);
+        }
+        if (opt.priceMultiplier) {
+          multiplier += opt.priceMultiplier;
+          summaryOptionsContainer.insertAdjacentHTML("beforeend", `
+            <div class="summary-option-item">
+              <span>${opt.label}</span>
+              <span>+${opt.priceMultiplier * 100}%</span>
+            </div>
+          `);
+        }
+      }
+    });
+
+    if (multiplier > 0) {
+      total = total + (total * multiplier);
+    }
+
+    summaryPrice.textContent = `${total} zł`;
+    summaryPrice.dataset.rawPrice = total; // zapisz jako liczbe do koszyka
+  }
+
+  function showToast() {
+    if (!toast) return;
+    toast.classList.add("is-visible");
+    setTimeout(() => {
+      toast.classList.remove("is-visible");
+    }, 3000);
+  }
+
+  categories.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      categories.forEach((c) => c.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      currentCategory = btn.dataset.category;
+      renderOptions(currentCategory);
     });
   });
 
-  templateButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const template = button.dataset.template;
-      const copy = templateCopy[template];
-      if (!copy) return;
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener("click", () => {
+      const serviceName = summaryTitle.textContent;
+      const price = summaryPrice.dataset.rawPrice || 0;
 
-      templateButtons.forEach((item) => item.classList.remove("is-active"));
-      button.classList.add("is-active");
-      previews.forEach((preview) => {
-        preview.dataset.theme = copy.theme || template;
+      const configBrandName = document.getElementById("config-brand-name")?.value || "";
+      const configDetailsText = document.getElementById("config-details-text")?.value || "";
+      const customTitle = configBrandName ? `${serviceName} (${configBrandName})` : serviceName;
+
+      // Zbieranie opcji
+      let optionsArray = [];
+      const service = servicesData[currentCategory];
+      service.options.forEach((opt) => {
+        const selected = currentSelections[opt.id];
+        if (opt.type === "select" && selected) {
+          optionsArray.push(`${opt.label}: ${selected.label}`);
+        } else if (opt.type === "toggle" && selected) {
+          optionsArray.push(`${opt.label}`);
+        }
       });
 
-      if (inputs.title) inputs.title.value = copy.title;
-      if (inputs.subtitle) inputs.subtitle.value = copy.subtitle;
-      updatePreview();
+      if (configDetailsText) {
+          optionsArray.push(`Uwagi: ${configDetailsText}`);
+      }
 
-      previews.forEach((preview) => {
-        preview.animate(
-          [
-            { transform: "scale(0.97) rotate(-0.6deg)", filter: "saturate(0.8)" },
-            { transform: "scale(1) rotate(0deg)", filter: "saturate(1)" },
-          ],
-          { duration: 360, easing: "cubic-bezier(.19,1,.22,1)" }
-        );
-      });
+      // Zamiast duplikować logikę, wywołujemy globalnie dostępną funkcję koszyka lub emulujemy zdarzenie
+      // Opcja najprostsza: wysłanie CustomEvent
+      document.dispatchEvent(new CustomEvent("markedia:add-to-cart", {
+        detail: { id: currentCategory, title: customTitle, price: parseFloat(price), options: optionsArray }
+      }));
+
+      showToast();
     });
-  });
+  }
 
-  formatButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      formatButtons.forEach((item) => item.classList.remove("is-active"));
-      button.classList.add("is-active");
-      const isCustom = button.dataset.bannerFormat === "własny wymiar";
-      if (customSize) customSize.hidden = !isCustom;
-      setPreviewText(previewFields.size, getSelectedFormat());
-      updateSummary();
-    });
-  });
-
-  document.addEventListener("banner:selected", (event) => {
-    const banner = event.detail || {};
-
-    if (selectedBannerInput) {
-      selectedBannerInput.value = [banner.title, banner.category].filter(Boolean).join(" / ");
-    }
-    selectedBannerLabel = [banner.title, banner.category].filter(Boolean).join(" / ") || "Startowy baner SPRZEDAM";
-
-    if (inputs.title && banner.title) {
-      inputs.title.value = banner.title.toUpperCase();
-    }
-
-    const matchedFormat = [...formatButtons].find((button) => button.dataset.bannerFormat === banner.format);
-    if (matchedFormat) {
-      formatButtons.forEach((item) => item.classList.remove("is-active"));
-      matchedFormat.classList.add("is-active");
-      setPreviewText(previewFields.size, matchedFormat.dataset.bannerFormat);
-    }
-
-    updatePreview();
-    document.querySelector("#zamowienie")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-
-  form?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    if (!form.reportValidity()) return;
-
-    const submitButton = form.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-    setOrderStatus("Zapisuję zamówienie...");
-    updateSummary();
-
-    try {
-      const payload = {
-        selectedBanner: selectedBannerLabel,
-        template: getSelectedTemplate(),
-        format: getSelectedFormat(),
-        title: inputs.title?.value,
-        phone: inputs.subtitle?.value,
-        contact: orderInputs.contact?.value,
-        email: orderInputs.email?.value,
-        quantity: orderInputs.quantity?.value,
-        deadline: orderInputs.deadline?.value,
-        notes: orderInputs.notes?.value,
-        brief: summary.value,
-      };
-
-      const result = await requestJson("/api/banner-orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      setOrderStatus(`Zamówienie ${result.order.id} zapisane. Oddzwonimy z wyceną.`, "ok");
-    } catch (error) {
-      setOrderStatus(`${error.message} Jeśli coś blokuje zapis, wyślij brief mailowo.`, "error");
-    } finally {
-      submitButton.disabled = false;
-    }
-  });
-
-  previews.forEach((preview) => {
-    preview.dataset.theme = "sale";
-  });
-  updatePreview();
+  // Initial render
+  renderOptions(currentCategory);
 }
 
 const escapeHTML = (value) =>
@@ -564,87 +580,6 @@ async function requestJson(url, options = {}) {
   }
 
   return data;
-}
-
-function initBannerCatalog() {
-  const filters = document.querySelector("[data-catalog-filters]");
-  const grid = document.querySelector("[data-catalog-grid]");
-  const empty = document.querySelector("[data-catalog-empty]");
-
-  if (!filters || !grid) return;
-
-  let catalog = { categories: [], banners: [] };
-  let activeCategory = "all";
-
-  const renderFilters = () => {
-    const categories = ["all", ...catalog.categories];
-    filters.innerHTML = categories
-      .map((category) => {
-        const label = category === "all" ? "Wszystkie" : category;
-        return `<button class="${category === activeCategory ? "is-active" : ""}" type="button" data-catalog-category="${escapeHTML(category)}">${escapeHTML(label)}</button>`;
-      })
-      .join("");
-
-    filters.querySelectorAll("[data-catalog-category]").forEach((button) => {
-      button.addEventListener("click", () => {
-        activeCategory = button.dataset.catalogCategory;
-        renderFilters();
-        renderCards();
-      });
-    });
-  };
-
-  const renderCards = () => {
-    const banners = catalog.banners.filter((banner) => banner.isActive !== false);
-    const filtered = activeCategory === "all" ? banners : banners.filter((banner) => banner.category === activeCategory);
-
-    empty?.classList.toggle("is-visible", filtered.length === 0);
-    grid.innerHTML = filtered
-      .map(
-        (banner) => `
-          <article class="catalog-card">
-            <div class="catalog-card__media">
-              <span class="catalog-card__badge">${escapeHTML(banner.category)}</span>
-              <img src="${escapeHTML(banner.image || "assets/catalog/placeholder.svg")}" alt="${escapeHTML(banner.title)}" loading="lazy" />
-            </div>
-            <div class="catalog-card__body">
-              <h3>${escapeHTML(banner.title)}</h3>
-              <div class="catalog-card__meta">
-                <span>${escapeHTML(banner.format || "200 x 100 cm")}</span>
-                <span>${escapeHTML(banner.priceFrom || "indywidualna wycena")}</span>
-              </div>
-              <p>${escapeHTML(banner.description || "Gotowa wizualizacja do zamówienia i dopasowania pod Twoje dane.")}</p>
-              <button class="btn btn--primary" type="button" data-order-banner="${escapeHTML(banner.id)}">
-                <i data-lucide="shopping-bag" aria-hidden="true"></i>
-                <span>Zamów ten wzór</span>
-              </button>
-            </div>
-          </article>
-        `
-      )
-      .join("");
-
-    grid.querySelectorAll("[data-order-banner]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const banner = catalog.banners.find((item) => item.id === button.dataset.orderBanner);
-        if (!banner) return;
-        document.dispatchEvent(new CustomEvent("banner:selected", { detail: banner }));
-      });
-    });
-
-    window.lucide?.createIcons();
-  };
-
-  requestJson("/api/banner-catalog")
-    .then((data) => {
-      catalog = data;
-      renderFilters();
-      renderCards();
-    })
-    .catch(() => {
-      empty?.classList.add("is-visible");
-      if (empty) empty.textContent = "Nie udało się wczytać katalogu.";
-    });
 }
 
 function fileToDataUrl(file) {
@@ -966,8 +901,15 @@ function initMotionField() {
 }
 
 function initCart() {
+  let initialItems = [];
+  try {
+    initialItems = JSON.parse(localStorage.getItem("markedia-cart")) || [];
+  } catch (error) {
+    console.error("Cart init error", error);
+  }
+
   const cartState = {
-    items: JSON.parse(localStorage.getItem("markedia-cart")) || [],
+    items: initialItems,
   };
 
   const overlay = document.querySelector("[data-cart-overlay]");
@@ -1017,10 +959,18 @@ function initCart() {
         totalElements += item.quantity;
         totalPrice += item.price * item.quantity;
 
+        // Opcje zapisane jako tablica z zachowaniem bezpieczeństwa
+        const optionsHtml = (item.options && Array.isArray(item.options))
+          ? `<small style="color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+              ${item.options.map(opt => `<span>${escapeHTML(opt)}</span>`).join('')}
+             </small>`
+          : "";
+
         const cartItemHTML = `
           <div class="cart-item">
             <div class="cart-item__info">
-              <span class="cart-item__title">${item.title}</span>
+              <span class="cart-item__title">${escapeHTML(item.title)}</span>
+              ${optionsHtml}
               <span class="cart-item__price">${item.price} zł</span>
             </div>
             <div class="cart-item__actions">
@@ -1059,21 +1009,32 @@ function initCart() {
     }
   }
 
-  function addToCart(id, title, price) {
+  function addToCart(id, title, price, optionsText = "", skipToggle = false) {
     const parsedPrice = parseFloat(price);
     if (isNaN(parsedPrice)) return;
 
-    const existingItem = cartState.items.find((item) => item.id === id);
+    // Check if exact same item with same options exists
+    const existingItem = cartState.items.find((item) => {
+      // porównanie tablic options
+      if (item.id !== id) return false;
+      const opts1 = item.options || [];
+      const opts2 = optionsText || [];
+      if (opts1.length !== opts2.length) return false;
+      return opts1.every((val, i) => val === opts2[i]);
+    });
 
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
-      cartState.items.push({ id, title, price: parsedPrice, quantity: 1 });
+      cartState.items.push({ id, title, price: parsedPrice, quantity: 1, options: optionsText });
     }
 
     saveCart();
     updateCartUI();
-    toggleCart(); // Otwórz koszyk po dodaniu
+
+    if (!skipToggle) {
+      toggleCart();
+    }
   }
 
   function updateQuantity(index, delta) {
@@ -1114,6 +1075,12 @@ function initCart() {
     });
   });
 
+  document.addEventListener("markedia:add-to-cart", (e) => {
+    const { id, title, price, options } = e.detail;
+    addToCart(id, title, price, options, true); // true = skipToggle dla formularza konfiguratora, aby nie zasłaniał ekranu od razu
+    updateCartUI();
+  });
+
   if (cartItemsContainer) {
     cartItemsContainer.addEventListener("click", (e) => {
       const actionBtn = e.target.closest("[data-cart-action]");
@@ -1137,6 +1104,9 @@ function initCart() {
       let emailBody = "Dzień dobry, chciałbym złożyć zamówienie na następujące pakiety:\n\n";
       cartState.items.forEach(item => {
         emailBody += `- ${item.title} (x${item.quantity}) - ${item.price * item.quantity} zł\n`;
+        if (item.options && Array.isArray(item.options)) {
+          emailBody += `  Wybrane opcje:\n  ${item.options.join("\n  ")}\n`;
+        }
       });
       emailBody += `\nŁączna wartość: ${cartTotal.textContent}\n\nProszę o kontakt w celu finalizacji.`;
 

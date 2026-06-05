@@ -555,15 +555,166 @@ const escapeHTML = (value) =>
     return entities[character];
   });
 
-async function requestJson(url, options = {}) {
-  const response = await fetch(url, { cache: "no-store", ...options });
-  const data = await response.json().catch(() => ({}));
+const defaultCatalog = {
+  categories: ["Budowlane", "Mechanik", "Gastronomia", "Nieruchomości", "Usługi lokalne"],
+  banners: [
+    {
+      id: "demo-budowlane",
+      title: "Remonty i elewacje",
+      category: "Budowlane",
+      format: "200 x 100 cm",
+      priceFrom: "indywidualna wycena",
+      description: "Czytelny wzór dla ekip remontowych, elewacji, dachów i usług budowlanych.",
+      image: "assets/catalog/budowlane.svg",
+      isActive: true,
+      createdAt: "2026-05-28T00:00:00.000Z",
+    },
+    {
+      id: "demo-mechanik",
+      title: "Mechanika pojazdowa",
+      category: "Mechanik",
+      format: "200 x 100 cm",
+      priceFrom: "indywidualna wycena",
+      description: "Mocny baner dla warsztatu, serwisu opon, pomocy drogowej albo detailingu.",
+      image: "assets/catalog/mechanik.svg",
+      isActive: true,
+      createdAt: "2026-05-28T00:00:00.000Z",
+    },
+  ],
+};
 
-  if (!response.ok) {
-    throw new Error(data.error || "Nie udało się wykonać operacji.");
+function getLocalData(key, defaultValue) {
+  try {
+    const data = localStorage.getItem(key);
+    if (data) return JSON.parse(data);
+  } catch (e) {}
+  return defaultValue;
+}
+
+function setLocalData(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {}
+}
+
+async function requestJson(url, options = {}) {
+  const method = options.method || "GET";
+
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  if (url === "/api/banner-catalog" && method === "GET") {
+    return getLocalData("markedia-catalog", defaultCatalog);
   }
 
-  return data;
+  if (url === "/api/banner-category" && method === "POST") {
+    const payload = JSON.parse(options.body);
+    const name = (payload.name || "").trim();
+    if (!name) throw new Error("Podaj nazwę kategorii.");
+
+    const catalog = getLocalData("markedia-catalog", defaultCatalog);
+    if (!catalog.categories.some(c => c.toLowerCase() === name.toLowerCase())) {
+      catalog.categories.push(name);
+      catalog.categories.sort((a, b) => a.localeCompare(b, "pl"));
+      setLocalData("markedia-catalog", catalog);
+    }
+    return catalog;
+  }
+
+  if (url === "/api/banner-catalog" && method === "POST") {
+    const payload = JSON.parse(options.body);
+    const title = (payload.title || "").trim();
+    const category = (payload.category || "").trim();
+    if (!title || !category) throw new Error("Podaj tytuł i kategorię banera.");
+
+    const catalog = getLocalData("markedia-catalog", defaultCatalog);
+    const banner = {
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+      title,
+      category,
+      format: (payload.format || "").trim() || "200 x 100 cm",
+      priceFrom: (payload.priceFrom || "").trim() || "indywidualna wycena",
+      description: (payload.description || "").trim(),
+      image: payload.imageDataUrl || "assets/catalog/placeholder.svg",
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (!catalog.categories.some(c => c.toLowerCase() === category.toLowerCase())) {
+      catalog.categories.push(category);
+      catalog.categories.sort((a, b) => a.localeCompare(b, "pl"));
+    }
+
+    catalog.banners.unshift(banner);
+    setLocalData("markedia-catalog", catalog);
+    return { banner, catalog };
+  }
+
+  const catalogDeleteMatch = url.match(/^\/api\/banner-catalog\/([^/]+)$/);
+  if (catalogDeleteMatch && method === "DELETE") {
+    const catalog = getLocalData("markedia-catalog", defaultCatalog);
+    catalog.banners = catalog.banners.filter(b => b.id !== catalogDeleteMatch[1]);
+    setLocalData("markedia-catalog", catalog);
+    return catalog;
+  }
+
+  if (url === "/api/banner-orders" && method === "GET") {
+    const orders = getLocalData("markedia-orders", []);
+    return { orders };
+  }
+
+  if (url === "/api/banner-orders" && method === "POST") {
+    const payload = JSON.parse(options.body);
+    const title = (payload.title || "").trim();
+    const phone = (payload.phone || "").trim();
+    const contact = (payload.contact || "").trim();
+
+    if (!title || !phone || !contact) throw new Error("Uzupełnij hasło, telefon i imię albo nazwę firmy.");
+
+    const date = new Date();
+    const stamp = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("");
+    const orderId = `MRK-${stamp}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+    const order = {
+      id: orderId,
+      createdAt: date.toISOString(),
+      status: "nowe",
+      selectedBanner: (payload.selectedBanner || "").trim() || "Startowy baner SPRZEDAM",
+      template: (payload.template || "").trim() || "Sprzedam",
+      format: (payload.format || "").trim() || "200 x 100 cm",
+      material: "trwały baner hard solvent",
+      finish: "zgrzewane krawędzie, oczka co 50 cm",
+      title,
+      phone,
+      contact,
+      email: (payload.email || "").trim(),
+      quantity: (payload.quantity || "").trim() || "1",
+      deadline: (payload.deadline || "").trim() || "Standardowy",
+      notes: (payload.notes || "").trim(),
+      brief: (payload.brief || "").trim(),
+    };
+
+    const orders = getLocalData("markedia-orders", []);
+    orders.unshift(order);
+    setLocalData("markedia-orders", orders.slice(0, 500));
+    return { order };
+  }
+
+  const orderDeleteMatch = url.match(/^\/api\/banner-orders\/([^/]+)$/);
+  if (orderDeleteMatch && method === "DELETE") {
+    let orders = getLocalData("markedia-orders", []);
+    const initialLen = orders.length;
+    orders = orders.filter(o => o.id !== orderDeleteMatch[1]);
+
+    if (orders.length === initialLen) throw new Error("Nie znaleziono zamówienia.");
+    setLocalData("markedia-orders", orders);
+    return { orders };
+  }
+
+  throw new Error("Nie znaleziono endpointu.");
 }
 
 function initBannerCatalog() {

@@ -226,8 +226,8 @@ const ready = () => {
     });
   });
 
-  initBannerConfigurator();
-  initBannerCatalog();
+  initProductConfigurator();
+
   initBannerAdmin();
   initCart();
 
@@ -274,274 +274,7 @@ const ready = () => {
   initMotionField();
 };
 
-function initBannerConfigurator() {
-  const form = document.querySelector("[data-order-form]");
-  const previews = document.querySelectorAll("[data-banner-preview]");
-  const summary = document.querySelector("[data-banner-summary]");
-  const selectedBannerInput = document.querySelector("[data-selected-banner]");
-  const formatButtons = document.querySelectorAll("[data-banner-format]");
-  const templateButtons = document.querySelectorAll("[data-template]");
-  const customSize = document.querySelector("[data-custom-size]");
-  const customWidth = document.querySelector("[data-custom-width]");
-  const customHeight = document.querySelector("[data-custom-height]");
-  const orderStatus = document.querySelector("[data-order-status]");
-  const orderSelectionTitle = document.querySelector("[data-selected-template-title]");
-  const orderSelectionMeta = document.querySelector("[data-selected-template-meta]");
-  const orderRecaps = document.querySelectorAll("[data-order-recap]");
-  const orderFlow = document.querySelectorAll(".order-flow span");
-  const previewFields = {
-    title: document.querySelectorAll("[data-preview-title]"),
-    subtitle: document.querySelectorAll("[data-preview-subtitle]"),
-    size: document.querySelectorAll("[data-preview-size]"),
-  };
 
-  if (!previews.length || !summary) return;
-
-  const setPreviewText = (nodes, value) => {
-    nodes.forEach((node) => {
-      node.textContent = value;
-    });
-  };
-
-  const templateCopy = {
-    promo: {
-      title: "SPRZEDAM",
-      subtitle: "600 265 203",
-      theme: "sale",
-    },
-    premium: {
-      title: "Usługa premium",
-      subtitle: "Elegancki baner dla marki, która chce wyglądać pewnie i profesjonalnie.",
-      theme: "premium",
-    },
-    event: {
-      title: "Noc pełna emocji",
-      subtitle: "Zapowiedź wydarzenia, koncertu, premiery albo otwarcia lokalu.",
-      theme: "event",
-    },
-    local: {
-      title: "Tu działa Twoja firma",
-      subtitle: "Czytelny baner dla lokalnego biznesu, sklepu lub punktu usługowego.",
-      theme: "local",
-    },
-    minimal: {
-      title: "Mniej słów. Więcej efektu.",
-      subtitle: "Minimalny układ z dużym kontrastem i jednym mocnym komunikatem.",
-      theme: "minimal",
-    },
-    recruit: {
-      title: "Dołącz do zespołu",
-      subtitle: "Baner rekrutacyjny, który brzmi konkretnie i wygląda nowocześnie.",
-      theme: "recruit",
-    },
-  };
-
-  const inputs = {
-    title: document.querySelector('[data-preview-input="title"]'),
-    subtitle: document.querySelector('[data-preview-input="subtitle"]'),
-  };
-  const orderInputs = {
-    contact: document.querySelector('[data-order-input="contact"]'),
-    email: document.querySelector('[data-order-input="email"]'),
-    quantity: document.querySelector('[data-order-input="quantity"]'),
-    deadline: document.querySelector('[data-order-input="deadline"]'),
-    notes: document.querySelector('[data-order-input="notes"]'),
-  };
-
-  let selectedBannerLabel = selectedBannerInput?.value || "Startowy baner SPRZEDAM";
-
-  const getSelectedTemplate = () => document.querySelector("[data-template].is-active strong")?.textContent.trim() || "Sprzedam";
-
-  const getSelectedFormat = () => {
-    const active = document.querySelector("[data-banner-format].is-active")?.dataset.bannerFormat || "200 x 100 cm";
-    if (active !== "własny wymiar") return active;
-
-    const width = customWidth?.value.trim();
-    const height = customHeight?.value.trim();
-    return width && height ? `${width} x ${height} cm` : "własny wymiar";
-  };
-
-  const setOrderStatus = (message = "", type = "") => {
-    if (!orderStatus) return;
-    orderStatus.textContent = message;
-    orderStatus.classList.toggle("is-ok", type === "ok");
-    orderStatus.classList.toggle("is-error", type === "error");
-  };
-
-  const setRecap = (name, value) => {
-    orderRecaps.forEach((node) => {
-      if (node.dataset.orderRecap === name) node.textContent = value;
-    });
-  };
-
-  const updateOrderProgress = () => {
-    const hasContact = Boolean(orderInputs.contact?.value.trim());
-    const hasPhone = Boolean(inputs.subtitle?.value.trim());
-    const activeStep = hasContact && hasPhone ? 2 : hasContact || hasPhone ? 1 : 0;
-
-    orderFlow.forEach((step, index) => {
-      step.classList.toggle("is-active", index <= activeStep);
-    });
-  };
-
-  const updateSummary = () => {
-    const selectedTemplate = getSelectedTemplate();
-    const selectedFormat = getSelectedFormat();
-    const summaryRows = [
-      `Szablon: ${selectedTemplate}`,
-      `Wybrany wzór: ${selectedBannerLabel}`,
-      `Format: ${selectedFormat}`,
-      "Materiał: trwały baner hard solvent",
-      "Wykończenie: zgrzewane krawędzie, oczka co 50 cm",
-      `Hasło: ${inputs.title?.value || ""}`,
-      `Telefon: ${inputs.subtitle?.value || ""}`,
-      `Kontakt: ${orderInputs.contact?.value || ""}`,
-      `Email: ${orderInputs.email?.value || ""}`,
-      `Ilość: ${orderInputs.quantity?.value || "1"}`,
-      `Termin: ${orderInputs.deadline?.value || "Standardowy"}`,
-      `Uwagi: ${orderInputs.notes?.value || ""}`,
-    ];
-
-    summary.value = summaryRows.join("\n");
-    setRecap("template", selectedBannerLabel);
-    setRecap("format", selectedFormat);
-    setRecap("contact", orderInputs.contact?.value ? `${orderInputs.contact.value}${inputs.subtitle?.value ? ` / ${inputs.subtitle.value}` : ""}` : "Uzupełnij kontakt");
-    setRecap("deadline", `${orderInputs.deadline?.value || "Standardowy"} / ${orderInputs.quantity?.value || "1"} szt.`);
-    if (orderSelectionTitle) orderSelectionTitle.textContent = selectedBannerLabel;
-    if (orderSelectionMeta) {
-      orderSelectionMeta.textContent = `${selectedFormat} / hard solvent / zgrzew + oczka co 50 cm`;
-    }
-    updateOrderProgress();
-  };
-
-  const updatePreview = () => {
-    setPreviewText(previewFields.title, inputs.title?.value || "SPRZEDAM");
-    setPreviewText(previewFields.subtitle, inputs.subtitle?.value || "600 265 203");
-    updateSummary();
-  };
-
-  Object.values(inputs).forEach((input) => {
-    input?.addEventListener("input", updatePreview);
-  });
-
-  Object.values(orderInputs).forEach((input) => {
-    input?.addEventListener("input", updateSummary);
-    input?.addEventListener("change", updateSummary);
-  });
-
-  [customWidth, customHeight].forEach((input) => {
-    input?.addEventListener("input", () => {
-      setPreviewText(previewFields.size, getSelectedFormat());
-      updateSummary();
-    });
-  });
-
-  templateButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const template = button.dataset.template;
-      const copy = templateCopy[template];
-      if (!copy) return;
-
-      templateButtons.forEach((item) => item.classList.remove("is-active"));
-      button.classList.add("is-active");
-      previews.forEach((preview) => {
-        preview.dataset.theme = copy.theme || template;
-      });
-
-      if (inputs.title) inputs.title.value = copy.title;
-      if (inputs.subtitle) inputs.subtitle.value = copy.subtitle;
-      updatePreview();
-
-      previews.forEach((preview) => {
-        preview.animate(
-          [
-            { transform: "scale(0.97) rotate(-0.6deg)", filter: "saturate(0.8)" },
-            { transform: "scale(1) rotate(0deg)", filter: "saturate(1)" },
-          ],
-          { duration: 360, easing: "cubic-bezier(.19,1,.22,1)" }
-        );
-      });
-    });
-  });
-
-  formatButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      formatButtons.forEach((item) => item.classList.remove("is-active"));
-      button.classList.add("is-active");
-      const isCustom = button.dataset.bannerFormat === "własny wymiar";
-      if (customSize) customSize.hidden = !isCustom;
-      setPreviewText(previewFields.size, getSelectedFormat());
-      updateSummary();
-    });
-  });
-
-  document.addEventListener("banner:selected", (event) => {
-    const banner = event.detail || {};
-
-    if (selectedBannerInput) {
-      selectedBannerInput.value = [banner.title, banner.category].filter(Boolean).join(" / ");
-    }
-    selectedBannerLabel = [banner.title, banner.category].filter(Boolean).join(" / ") || "Startowy baner SPRZEDAM";
-
-    if (inputs.title && banner.title) {
-      inputs.title.value = banner.title.toUpperCase();
-    }
-
-    const matchedFormat = [...formatButtons].find((button) => button.dataset.bannerFormat === banner.format);
-    if (matchedFormat) {
-      formatButtons.forEach((item) => item.classList.remove("is-active"));
-      matchedFormat.classList.add("is-active");
-      setPreviewText(previewFields.size, matchedFormat.dataset.bannerFormat);
-    }
-
-    updatePreview();
-    document.querySelector("#zamowienie")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-
-  form?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    if (!form.reportValidity()) return;
-
-    const submitButton = form.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-    setOrderStatus("Zapisuję zamówienie...");
-    updateSummary();
-
-    try {
-      const payload = {
-        selectedBanner: selectedBannerLabel,
-        template: getSelectedTemplate(),
-        format: getSelectedFormat(),
-        title: inputs.title?.value,
-        phone: inputs.subtitle?.value,
-        contact: orderInputs.contact?.value,
-        email: orderInputs.email?.value,
-        quantity: orderInputs.quantity?.value,
-        deadline: orderInputs.deadline?.value,
-        notes: orderInputs.notes?.value,
-        brief: summary.value,
-      };
-
-      const result = await requestJson("/api/banner-orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      setOrderStatus(`Zamówienie ${result.order.id} zapisane. Oddzwonimy z wyceną.`, "ok");
-    } catch (error) {
-      setOrderStatus(`${error.message} Jeśli coś blokuje zapis, wyślij brief mailowo.`, "error");
-    } finally {
-      submitButton.disabled = false;
-    }
-  });
-
-  previews.forEach((preview) => {
-    preview.dataset.theme = "sale";
-  });
-  updatePreview();
-}
 
 const escapeHTML = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (character) => {
@@ -594,7 +327,12 @@ function getLocalData(key, defaultValue) {
 function setLocalData(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch (e) {}
+  } catch (e) {
+    if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+      throw new Error("Brak miejsca w pamięci przeglądarki (localStorage). Usuń stare dane.");
+    }
+    throw e;
+  }
 }
 
 async function requestJson(url, options = {}) {
@@ -717,86 +455,7 @@ async function requestJson(url, options = {}) {
   throw new Error("Nie znaleziono endpointu.");
 }
 
-function initBannerCatalog() {
-  const filters = document.querySelector("[data-catalog-filters]");
-  const grid = document.querySelector("[data-catalog-grid]");
-  const empty = document.querySelector("[data-catalog-empty]");
 
-  if (!filters || !grid) return;
-
-  let catalog = { categories: [], banners: [] };
-  let activeCategory = "all";
-
-  const renderFilters = () => {
-    const categories = ["all", ...catalog.categories];
-    filters.innerHTML = categories
-      .map((category) => {
-        const label = category === "all" ? "Wszystkie" : category;
-        return `<button class="${category === activeCategory ? "is-active" : ""}" type="button" data-catalog-category="${escapeHTML(category)}">${escapeHTML(label)}</button>`;
-      })
-      .join("");
-
-    filters.querySelectorAll("[data-catalog-category]").forEach((button) => {
-      button.addEventListener("click", () => {
-        activeCategory = button.dataset.catalogCategory;
-        renderFilters();
-        renderCards();
-      });
-    });
-  };
-
-  const renderCards = () => {
-    const banners = catalog.banners.filter((banner) => banner.isActive !== false);
-    const filtered = activeCategory === "all" ? banners : banners.filter((banner) => banner.category === activeCategory);
-
-    empty?.classList.toggle("is-visible", filtered.length === 0);
-    grid.innerHTML = filtered
-      .map(
-        (banner) => `
-          <article class="catalog-card">
-            <div class="catalog-card__media">
-              <span class="catalog-card__badge">${escapeHTML(banner.category)}</span>
-              <img src="${escapeHTML(banner.image || "assets/catalog/placeholder.svg")}" alt="${escapeHTML(banner.title)}" loading="lazy" />
-            </div>
-            <div class="catalog-card__body">
-              <h3>${escapeHTML(banner.title)}</h3>
-              <div class="catalog-card__meta">
-                <span>${escapeHTML(banner.format || "200 x 100 cm")}</span>
-                <span>${escapeHTML(banner.priceFrom || "indywidualna wycena")}</span>
-              </div>
-              <p>${escapeHTML(banner.description || "Gotowa wizualizacja do zamówienia i dopasowania pod Twoje dane.")}</p>
-              <button class="btn btn--primary" type="button" data-order-banner="${escapeHTML(banner.id)}">
-                <i data-lucide="shopping-bag" aria-hidden="true"></i>
-                <span>Zamów ten wzór</span>
-              </button>
-            </div>
-          </article>
-        `
-      )
-      .join("");
-
-    grid.querySelectorAll("[data-order-banner]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const banner = catalog.banners.find((item) => item.id === button.dataset.orderBanner);
-        if (!banner) return;
-        document.dispatchEvent(new CustomEvent("banner:selected", { detail: banner }));
-      });
-    });
-
-    window.lucide?.createIcons();
-  };
-
-  requestJson("/api/banner-catalog")
-    .then((data) => {
-      catalog = data;
-      renderFilters();
-      renderCards();
-    })
-    .catch(() => {
-      empty?.classList.add("is-visible");
-      if (empty) empty.textContent = "Nie udało się wczytać katalogu.";
-    });
-}
 
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -806,7 +465,36 @@ function fileToDataUrl(file) {
     }
 
     const reader = new FileReader();
-    reader.addEventListener("load", () => resolve(reader.result));
+    reader.addEventListener("load", () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        // compress slightly
+        resolve(canvas.toDataURL("image/jpeg", 0.7));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    });
     reader.addEventListener("error", reject);
     reader.readAsDataURL(file);
   });
@@ -1255,6 +943,11 @@ function initCart() {
     overlay.addEventListener("click", toggleCart);
   }
 
+  document.addEventListener("cart:add", (e) => {
+    const item = e.detail;
+    addToCart(item.id, item.title, item.price);
+  });
+
   addToCartBtns.forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -1303,4 +996,327 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", ready);
 } else {
   ready();
+}
+
+
+const productCatalog = {
+  logo: {
+    title: "Projekt Logo",
+    basePrice: 800,
+    baseDeadline: "5-7 dni roboczych",
+    fields: [
+      { id: "variants", label: "Liczba propozycji", type: "select", options: [
+        { label: "1 propozycja", price: 0, deadline: 0 },
+        { label: "3 propozycje", price: 400, deadline: 2 },
+        { label: "5 propozycji", price: 800, deadline: 4 }
+      ]},
+      { id: "revisions", label: "Liczba poprawek", type: "select", options: [
+        { label: "2 rundy poprawek", price: 0, deadline: 0 },
+        { label: "Nielimitowane", price: 300, deadline: 2 }
+      ]},
+      { id: "brandbook", label: "Księga znaku", type: "checkbox", price: 500, deadline: 3 },
+      { id: "express", label: "Ekspresowa realizacja (-48h)", type: "checkbox", price: 300, deadline: -2 }
+    ]
+  },
+  baner: {
+    title: "Projekt Banera",
+    basePrice: 150,
+    baseDeadline: "2-3 dni robocze",
+    fields: [
+      { id: "format", label: "Format", type: "select", options: [
+        { label: "Standard (np. 200x100 cm)", price: 0, deadline: 0 },
+        { label: "Wielkoformatowy (>300cm)", price: 100, deadline: 1 }
+      ]},
+      { id: "printPrep", label: "Przygotowanie do druku", type: "checkbox", price: 50, deadline: 0 },
+      { id: "express", label: "Ekspresowa realizacja (-24h)", type: "checkbox", price: 100, deadline: -1 }
+    ]
+  },
+  wizytowka: {
+    title: "Projekt Wizytówki",
+    basePrice: 100,
+    baseDeadline: "2-3 dni robocze",
+    fields: [
+      { id: "sides", label: "Strony", type: "select", options: [
+        { label: "Jednostronna", price: 0, deadline: 0 },
+        { label: "Dwustronna", price: 50, deadline: 0 }
+      ]},
+      { id: "variants", label: "Wersje dla pracowników", type: "number", min: 1, basePrice: 0, addPrice: 20 },
+      { id: "printPrep", label: "Przygotowanie do druku", type: "checkbox", price: 50, deadline: 0 }
+    ]
+  },
+  ulotka: {
+    title: "Projekt Ulotki",
+    basePrice: 200,
+    baseDeadline: "3-4 dni robocze",
+    fields: [
+      { id: "format", label: "Format", type: "select", options: [
+        { label: "A5 / DL", price: 0, deadline: 0 },
+        { label: "Składana (np. 3xDL)", price: 150, deadline: 1 }
+      ]},
+      { id: "sides", label: "Strony", type: "select", options: [
+        { label: "Jednostronna", price: 0, deadline: 0 },
+        { label: "Dwustronna", price: 80, deadline: 0 }
+      ]},
+      { id: "printPrep", label: "Przygotowanie do druku", type: "checkbox", price: 50, deadline: 0 }
+    ]
+  },
+  social: {
+    title: "Projekt Social Media",
+    basePrice: 120,
+    baseDeadline: "2-3 dni robocze",
+    fields: [
+      { id: "type", label: "Typ", type: "select", options: [
+        { label: "Pojedynczy post/story", price: 0, deadline: 0 },
+        { label: "Karuzela (do 5 slajdów)", price: 150, deadline: 1 },
+        { label: "Zestaw 5 postów", price: 380, deadline: 2 }
+      ]},
+      { id: "animation", label: "Animacja (np. proste wejście wideo)", type: "checkbox", price: 200, deadline: 2 }
+    ]
+  },
+  www: {
+    title: "Projekt Strony WWW (UI/UX)",
+    basePrice: 1500,
+    baseDeadline: "10-14 dni roboczych",
+    fields: [
+      { id: "pages", label: "Liczba podstron", type: "select", options: [
+        { label: "One-page (Landing Page)", price: 0, deadline: 0 },
+        { label: "Do 5 podstron", price: 1000, deadline: 5 },
+        { label: "Do 10 podstron", price: 2000, deadline: 10 }
+      ]},
+      { id: "rwd", label: "Makiety mobilne (RWD)", type: "checkbox", price: 500, deadline: 2 },
+      { id: "premium", label: "Projekt Premium (zaawansowane animacje GSAP)", type: "checkbox", price: 1000, deadline: 4 }
+    ]
+  },
+  inne: {
+    title: "Inny Projekt",
+    basePrice: 0,
+    baseDeadline: "Do ustalenia",
+    fields: [
+      { id: "customType", label: "Rodzaj projektu (np. menu, plakat)", type: "text" },
+      { id: "consultation", label: "Darmowa konsultacja przed wyceną", type: "checkbox", price: 0, deadline: 0, checked: true }
+    ]
+  }
+};
+
+function initProductConfigurator() {
+  const form = document.querySelector("[data-configurator-form]");
+  if (!form) return;
+
+  const categoryBtns = document.querySelectorAll("[data-config-category]");
+  const dynamicFieldsContainer = document.querySelector("[data-configurator-fields]");
+  const recapProduct = document.querySelector('[data-config-recap="product"]');
+  const recapOptions = document.querySelector('[data-config-recap="options"]');
+  const recapDeadline = document.querySelector('[data-config-recap="deadline"]');
+  const recapPrice = document.querySelector('[data-config-recap="price"]');
+  const addToCartBtn = document.querySelector("[data-config-add-to-cart]");
+  const statusMsg = document.querySelector("[data-config-status]");
+
+  let currentCategory = "logo";
+  let currentPrice = 0;
+  let currentDeadlineDays = 0;
+  let currentConfig = {};
+
+  const renderFields = () => {
+    const product = productCatalog[currentCategory];
+    if (!product) return;
+
+    dynamicFieldsContainer.innerHTML = product.fields.map(field => {
+      let fieldHtml = "";
+
+      if (field.type === "select") {
+        const optionsHtml = field.options.map((opt, idx) =>
+          `<option value="${idx}">${opt.label} ${opt.price > 0 ? '(+' + opt.price + ' zł)' : ''}</option>`
+        ).join("");
+        fieldHtml = `
+          <div class="config-field-group">
+            <label for="${field.id}">${field.label}</label>
+            <select id="${field.id}" name="${field.id}" data-config-input>
+              ${optionsHtml}
+            </select>
+          </div>
+        `;
+      } else if (field.type === "checkbox") {
+        fieldHtml = `
+          <div class="config-field-group">
+            <label class="config-checkbox-wrapper">
+              <input type="checkbox" id="${field.id}" name="${field.id}" data-config-input ${field.checked ? 'checked' : ''}>
+              ${field.label} ${field.price > 0 ? '(+' + field.price + ' zł)' : ''}
+            </label>
+          </div>
+        `;
+      } else if (field.type === "number") {
+        fieldHtml = `
+          <div class="config-field-group">
+            <label for="${field.id}">${field.label} ${field.addPrice > 0 ? '(+' + field.addPrice + ' zł/szt)' : ''}</label>
+            <input type="number" id="${field.id}" name="${field.id}" min="${field.min}" value="${field.min}" data-config-input>
+          </div>
+        `;
+      } else if (field.type === "text") {
+        fieldHtml = `
+          <div class="config-field-group full-width">
+            <label for="${field.id}">${field.label}</label>
+            <input type="text" id="${field.id}" name="${field.id}" placeholder="${field.label}" data-config-input>
+          </div>
+        `;
+      }
+      return fieldHtml;
+    }).join("");
+
+    attachInputListeners();
+    updateRecap();
+  };
+
+  const attachInputListeners = () => {
+    document.querySelectorAll("[data-config-input]").forEach(input => {
+      input.addEventListener("change", updateRecap);
+      input.addEventListener("input", updateRecap);
+    });
+  };
+
+  const updateRecap = () => {
+    const product = productCatalog[currentCategory];
+    if (!product) return;
+
+    currentPrice = product.basePrice;
+
+    // Parse base deadline assuming format "X-Y dni..."
+    let minDays = 0, maxDays = 0;
+    const match = product.baseDeadline.match(/(\d+)-(\d+)/);
+    if(match) {
+        minDays = parseInt(match[1], 10);
+        maxDays = parseInt(match[2], 10);
+    }
+
+    let addedDeadline = 0;
+    currentConfig = {};
+    let optionsHtml = "";
+
+    product.fields.forEach(field => {
+      const input = document.getElementById(field.id);
+      if (!input) return;
+
+      if (field.type === "select") {
+        const selectedOpt = field.options[parseInt(input.value, 10)];
+        if(selectedOpt) {
+            currentPrice += selectedOpt.price;
+            addedDeadline += selectedOpt.deadline;
+            currentConfig[field.label] = selectedOpt.label;
+
+            if(selectedOpt.price > 0) {
+                optionsHtml += `<div class="config-recap-option-item"><span>${field.label}: ${selectedOpt.label}</span><span>+${selectedOpt.price} zł</span></div>`;
+            } else {
+                optionsHtml += `<div class="config-recap-option-item"><span>${field.label}: ${selectedOpt.label}</span><span></span></div>`;
+            }
+        }
+      } else if (field.type === "checkbox") {
+        if (input.checked) {
+          currentPrice += field.price;
+          addedDeadline += field.deadline;
+          currentConfig[field.label] = "Tak";
+
+          if(field.price > 0) {
+              optionsHtml += `<div class="config-recap-option-item"><span>${field.label}</span><span>+${field.price} zł</span></div>`;
+          } else {
+              optionsHtml += `<div class="config-recap-option-item"><span>${field.label}</span><span></span></div>`;
+          }
+        }
+      } else if (field.type === "number") {
+          const val = parseInt(input.value, 10);
+          if(!isNaN(val) && val >= field.min) {
+              const extraItems = val - field.min;
+              const cost = extraItems * field.addPrice;
+              currentPrice += cost;
+              currentConfig[field.label] = val;
+
+              if(cost > 0) {
+                  optionsHtml += `<div class="config-recap-option-item"><span>${field.label}: ${val}</span><span>+${cost} zł</span></div>`;
+              } else {
+                  optionsHtml += `<div class="config-recap-option-item"><span>${field.label}: ${val}</span><span></span></div>`;
+              }
+          }
+      } else if (field.type === "text") {
+          if(input.value.trim()) {
+              currentConfig[field.label] = input.value.trim();
+              optionsHtml += `<div class="config-recap-option-item"><span>${field.label}: ${input.value.trim()}</span><span></span></div>`;
+          }
+      }
+    });
+
+    const notesInput = document.querySelector('[data-config-input="notes"]');
+    if(notesInput && notesInput.value.trim()) {
+        currentConfig["Uwagi"] = notesInput.value.trim();
+    }
+
+    recapProduct.textContent = product.title;
+    recapOptions.innerHTML = optionsHtml;
+
+    if (currentCategory === "inne") {
+        recapPrice.textContent = "indywidualna wycena";
+        recapDeadline.textContent = "Do ustalenia";
+    } else {
+        recapPrice.textContent = currentPrice + " zł";
+
+        let finalMin = Math.max(1, minDays + addedDeadline);
+        let finalMax = Math.max(1, maxDays + addedDeadline);
+        if(finalMin === finalMax) {
+            recapDeadline.textContent = `ok. ${finalMin} dni roboczych`;
+        } else {
+            recapDeadline.textContent = `ok. ${finalMin}-${finalMax} dni roboczych`;
+        }
+    }
+  };
+
+  categoryBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      categoryBtns.forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      currentCategory = btn.dataset.configCategory;
+
+      const iconMap = {
+          logo: "pen-tool",
+          baner: "layout-template",
+          wizytowka: "contact",
+          ulotka: "file-text",
+          social: "instagram",
+          www: "monitor",
+          inne: "more-horizontal"
+      };
+
+      const iconEl = document.querySelector(".illustration-icon");
+      if(iconEl && window.lucide) {
+          iconEl.setAttribute("data-lucide", iconMap[currentCategory] || "layers");
+          window.lucide.createIcons();
+      }
+
+      renderFields();
+    });
+  });
+
+  addToCartBtn.addEventListener("click", () => {
+    const product = productCatalog[currentCategory];
+
+    let title = product.title;
+    if(currentCategory === "inne" && currentConfig["Rodzaj projektu (np. menu, plakat)"]) {
+        title += ` (${currentConfig["Rodzaj projektu (np. menu, plakat)"]})`;
+    }
+
+    const cartItem = {
+      id: `conf-${currentCategory}-${Date.now()}`,
+      title: title,
+      price: currentCategory === "inne" ? 0 : currentPrice,
+      config: currentConfig
+    };
+
+    document.dispatchEvent(new CustomEvent("cart:add", { detail: cartItem }));
+
+    statusMsg.textContent = "Produkt dodany do koszyka!";
+    statusMsg.classList.remove("error");
+
+    setTimeout(() => {
+        statusMsg.textContent = "";
+    }, 3000);
+  });
+
+  // Initial render
+  renderFields();
 }

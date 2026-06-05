@@ -85,6 +85,7 @@
               <div class="illustration-glow"></div>
            </div>
         </div>
+      </div>
       </section>
 
       <section class="section banner-order" id="konfigurator" aria-labelledby="order-title">
@@ -93,18 +94,35 @@
           <h2 id="order-title">Wybierz produkt i dostosuj opcje.</h2>
         </div>
 
-        <div class="banner-order__grid">
+                <!-- KROK 1: SKLEP -->
+        <div class="store-view reveal" id="store-view">
+          <div class="store-categories-nav" data-store-nav>
+            <button type="button" class="is-active" data-store-category="logo">Logo</button>
+            <button type="button" data-store-category="baner">Baner</button>
+            <button type="button" data-store-category="wizytowka">Wizytówka</button>
+            <button type="button" data-store-category="ulotka">Ulotka</button>
+            <button type="button" data-store-category="social">Social Media</button>
+            <button type="button" data-store-category="www">Strony WWW</button>
+            <button type="button" data-store-category="inne">Inne</button>
+          </div>
+          <div class="store-products-grid" id="store-products-grid">
+            <!-- Rendered dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- KROK 2: KONFIGURATOR -->
+        <div class="configurator-view" id="configurator-view" style="display: none;">
+          <div class="configurator-header reveal">
+            <button class="btn btn--outline" type="button" id="back-to-store">
+              <i data-lucide="arrow-left" aria-hidden="true"></i>
+              <span>Wróć do sklepu</span>
+            </button>
+            <h3 id="configurator-product-title" class="config-title">Konfigurujesz: Projekt Logo</h3>
+          </div>
+          <div class="banner-order__grid">
           <!-- Formularz konfiguratora -->
           <form class="banner-form reveal" data-configurator-form>
-            <div class="config-categories banner-form__wide" aria-label="Wybór kategorii">
-                <button type="button" class="is-active" data-config-category="logo">Logo</button>
-                <button type="button" data-config-category="baner">Baner</button>
-                <button type="button" data-config-category="wizytowka">Wizytówka</button>
-                <button type="button" data-config-category="ulotka">Ulotka</button>
-                <button type="button" data-config-category="social">Projekt Social Media</button>
-                <button type="button" data-config-category="www">Projekt Strony WWW</button>
-                <button type="button" data-config-category="inne">Inne</button>
-            </div>
+
 
             <div class="config-dynamic-fields banner-form__wide" data-configurator-fields>
                 <!-- Rendered dynamically via JS -->
@@ -153,6 +171,7 @@
             <p class="config-status-msg" data-config-status></p>
           </aside>
         </div>
+      </div>
       </section>
     </main>
 

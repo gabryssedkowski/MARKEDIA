@@ -1,23 +1,11 @@
-127.0.0.1 - - [05/Jun/2026 14:43:53] "GET /zamow.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:45:13] "GET /zamow.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:45:13] "GET /assets/MARKEDIA-LOGO-WHITE.svg HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:45:13] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:45:13] "GET /assets/MARKEDIA-LOGO.svg HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:45:13] "GET /script.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:46:33] "GET /zamow.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:46:33] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:46:33] "GET /assets/MARKEDIA-LOGO.svg HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:46:33] "GET /assets/MARKEDIA-LOGO-WHITE.svg HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:46:33] "GET /script.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:47:11] "GET /zamow.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:47:11] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:47:11] "GET /assets/MARKEDIA-LOGO-WHITE.svg HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:47:11] "GET /assets/MARKEDIA-LOGO.svg HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:47:11] "GET /script.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:47:14] "GET /assets/catalog/budowlane.svg HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:48:19] "GET /zamow.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:48:19] "GET /assets/MARKEDIA-LOGO-WHITE.svg HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:48:19] "GET /assets/MARKEDIA-LOGO.svg HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:48:19] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:48:19] "GET /script.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Jun/2026 14:48:21] "GET /assets/catalog/budowlane.svg HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 21:27:14] "GET /zamow.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 21:29:20] "GET /zamow.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 21:31:01] "GET /zamow.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 21:31:01] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 21:31:01] "GET /assets/MARKEDIA-LOGO-WHITE.svg HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 21:31:01] "GET /assets/MARKEDIA-LOGO.svg HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 21:31:01] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Jun/2026 21:31:02] code 404, message File not found
+127.0.0.1 - - [05/Jun/2026 21:31:02] "GET /assets/placeholder-logo.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [05/Jun/2026 21:31:05] code 404, message File not found
+127.0.0.1 - - [05/Jun/2026 21:31:05] "GET /assets/placeholder-baner.jpg HTTP/1.1" 404 -

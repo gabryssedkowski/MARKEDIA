@@ -4477,6 +4477,57 @@ h3 {
   transform: rotate(45deg);
 }
 
+/* VISUAL GRID FOR CONFIGURATOR */
+.config-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.config-visual-card {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  transition: transform 200ms var(--ease), border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.config-visual-card img {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #f7f7f7;
+}
+
+.config-visual-card span {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.config-visual-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(106, 13, 173, 0.3);
+}
+
+.config-visual-card.is-active {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 2px rgba(106, 13, 173, 0.2);
+}
+
+.config-visual-card.is-active span {
+  color: var(--purple);
+}
+
 .config-recap-options {
   grid-column: 1 / -1;
   margin-top: -5px;

@@ -1116,11 +1116,66 @@ function initProductConfigurator() {
   let currentDeadlineDays = 0;
   let currentConfig = {};
 
-  const renderFields = () => {
+  let currentBannerCatalog = null;
+  let dynamicFields = [];
+  let selectedBannerCategoryIndex = 0;
+
+  const renderFields = async () => {
     const product = productCatalog[currentCategory];
     if (!product) return;
 
-    dynamicFieldsContainer.innerHTML = product.fields.map(field => {
+    dynamicFields = [...product.fields];
+
+    if (currentCategory === "baner") {
+      try {
+        if (!currentBannerCatalog) {
+          currentBannerCatalog = await requestJson("/api/banner-catalog");
+        }
+
+        const categories = currentBannerCatalog.categories || [];
+        const categoryOptions = [
+          { label: "Personalizowany projekt", price: 0, deadline: 0, value: "" },
+          ...categories.map(c => ({ label: `Gotowy wzór: ${c}`, price: 0, deadline: 0, value: c }))
+        ];
+
+        dynamicFields.unshift({
+          id: "bannerCategory",
+          label: "Wybór projektu",
+          type: "select",
+          options: categoryOptions,
+          isDynamicCategory: true
+        });
+
+        const catOpt = categoryOptions[selectedBannerCategoryIndex];
+        if (catOpt && catOpt.value) {
+           const bannersInCat = currentBannerCatalog.banners.filter(b => b.category === catOpt.value && b.isActive !== false);
+           if (bannersInCat.length > 0) {
+              const bannerOptions = bannersInCat.map(b => ({
+                 label: b.title,
+                 price: 0,
+                 deadline: 0,
+                 value: b.id
+              }));
+
+              dynamicFields.splice(1, 0, {
+                 id: "bannerTemplate",
+                 label: "Wybierz gotowy projekt",
+                 type: "select",
+                 options: bannerOptions
+              });
+           }
+        }
+
+      } catch(e) {
+        console.error("Nie udało się załadować katalogu banerów.", e);
+      }
+    }
+
+    renderHtml();
+  };
+
+  const renderHtml = () => {
+    dynamicFieldsContainer.innerHTML = dynamicFields.map(field => {
       let fieldHtml = "";
 
       if (field.type === "select") {
@@ -1159,8 +1214,19 @@ function initProductConfigurator() {
           </div>
         `;
       }
+
+      if (field.id === "bannerCategory" || field.id === "bannerTemplate") {
+        fieldHtml = fieldHtml.replace('class="config-field-group"', 'class="config-field-group full-width"');
+      }
+
       return fieldHtml;
     }).join("");
+
+    // Restore selected value for bannerCategory if it exists
+    const categoryInput = document.getElementById("bannerCategory");
+    if (categoryInput) {
+       categoryInput.value = selectedBannerCategoryIndex;
+    }
 
     attachInputListeners();
     updateRecap();
@@ -1168,8 +1234,19 @@ function initProductConfigurator() {
 
   const attachInputListeners = () => {
     document.querySelectorAll("[data-config-input]").forEach(input => {
-      input.addEventListener("change", updateRecap);
-      input.addEventListener("input", updateRecap);
+      input.addEventListener("change", (e) => {
+          if (e.target.id === "bannerCategory") {
+              selectedBannerCategoryIndex = parseInt(e.target.value, 10) || 0;
+              renderFields();
+          } else {
+              updateRecap();
+          }
+      });
+      input.addEventListener("input", (e) => {
+          if (e.target.id !== "bannerCategory") {
+              updateRecap();
+          }
+      });
     });
   };
 
@@ -1191,7 +1268,8 @@ function initProductConfigurator() {
     currentConfig = {};
     let optionsHtml = "";
 
-    product.fields.forEach(field => {
+    // Use dynamicFields instead of product.fields to capture dynamically added banner categories and templates
+    dynamicFields.forEach(field => {
       const input = document.getElementById(field.id);
       if (!input) return;
 

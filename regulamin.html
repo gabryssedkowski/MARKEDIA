@@ -3,11 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Skonfiguruj i zamów projekt w Markedia. Wybierz usługę graficzną i dopasuj opcje do swoich potrzeb."
-    />
-    <title>Skonfiguruj produkt - Markedia</title>
+    <meta name="description" content="Regulamin - Markedia" />
+    <title>Regulamin - Markedia</title>
     <link rel="icon" href="assets/MARKEDIA-LOGO.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,7 +14,7 @@
     />
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body class="is-loading banner-page config-page">
+  <body class="is-loading terms-page">
     <div class="loader" aria-hidden="true">
       <img src="assets/MARKEDIA-LOGO-WHITE.svg" alt="" />
       <div class="loader__bar"><span></span></div>
@@ -34,7 +31,7 @@
       </a>
       <nav class="nav" id="site-nav" aria-label="Nawigacja glowna">
         <a href="index.html#uslugi">Usługi</a>
-        <a href="zamow.html" class="is-active">Zamów</a>
+        <a href="zamow.html">Zamów</a>
         <a href="index.html#realizacje">Realizacje</a>
         <a href="index.html#proces">Proces</a>
         <a href="index.html#kontakt">Kontakt</a>
@@ -58,100 +55,32 @@
       <a href="tel:+48732139599" aria-label="Zadzwon">
         <i data-lucide="phone" aria-hidden="true"></i>
       </a>
-      <a href="#konfigurator" aria-label="Przejdz do zamowienia">
-        <i data-lucide="shopping-bag" aria-hidden="true"></i>
-      </a>
     </aside>
 
-    <main>
-      <section class="banner-hero">
-        <div class="banner-hero__copy reveal">
-          <p class="eyebrow">Sklep i konfigurator</p>
-          <h1>Zbuduj swój projekt krok po kroku.</h1>
-          <p>
-            Wybierz kategorię i dostosuj produkt do swoich potrzeb. Od prostych banerów po kompleksowe projekty stron WWW i identyfikacji wizualnej.
-          </p>
-          <div class="hero__actions">
-            <a class="btn btn--primary magnetic" href="#konfigurator">
-              <i data-lucide="settings-2" aria-hidden="true"></i>
-              <span>Rozpocznij konfigurację</span>
-            </a>
-          </div>
-        </div>
-
-        <div class="banner-preview-shell reveal" aria-label="Wizualizacja konfiguratora">
-           <div class="configurator-illustration">
-              <i data-lucide="layers" class="illustration-icon"></i>
-              <div class="illustration-glow"></div>
-           </div>
-        </div>
-      </section>
-
-      <section class="section banner-order" id="konfigurator" aria-labelledby="order-title">
+    <main class="terms-main">
+      <section class="section">
         <div class="section__intro reveal">
-          <p class="eyebrow">Konfigurator</p>
-          <h2 id="order-title">Wybierz produkt i dostosuj opcje.</h2>
+          <p class="eyebrow">Dokumenty</p>
+          <h1>Regulamin</h1>
         </div>
+        <div class="terms-content reveal">
+          <h3>1. Postanowienia ogólne</h3>
+          <p>Niniejszy regulamin określa zasady korzystania z usług graficznych oferowanych przez Markedia.</p>
+          <p>Usługi świadczone są przez osobę fizyczną. W związku z tym, rozliczenia i wystawianie faktur realizowane są głównie za pośrednictwem platformy Useme (umowy o dzieło/zlecenia), co umożliwia otrzymanie pełnoprawnej faktury VAT przez Klienta bez konieczności prowadzenia działalności gospodarczej przez Wykonawcę.</p>
 
-        <div class="banner-order__grid">
-          <!-- Formularz konfiguratora -->
-          <form class="banner-form reveal" data-configurator-form>
-            <div class="config-categories banner-form__wide" aria-label="Wybór kategorii">
-                <button type="button" class="is-active" data-config-category="logo">Logo</button>
-                <button type="button" data-config-category="baner">Baner</button>
-                <button type="button" data-config-category="wizytowka">Wizytówka</button>
-                <button type="button" data-config-category="ulotka">Ulotka</button>
-                <button type="button" data-config-category="social">Projekt Social Media</button>
-                <button type="button" data-config-category="www">Projekt Strony WWW</button>
-                <button type="button" data-config-category="inne">Inne</button>
-            </div>
+          <h3>2. Zamówienia i realizacja</h3>
+          <p>Zamówienia można składać poprzez formularz kontaktowy, bezpośrednio na adres e-mail lub korzystając z konfiguratora na stronie.</p>
+          <p>Czas realizacji zamówienia jest ustalany indywidualnie, a prace projektowe rozpoczynają się po zatwierdzeniu wytycznych (briefu).</p>
 
-            <div class="config-dynamic-fields banner-form__wide" data-configurator-fields>
-                <!-- Rendered dynamically via JS -->
-            </div>
+          <h3>3. Płatności</h3>
+          <p>Rozliczenia za projekty następują zgodnie z wyceną po akceptacji projektu. W przypadku rozliczeń przez Useme, Klient otrzymuje proformę, a po jej opłaceniu serwis wystawia fakturę VAT i przekazuje gotowe pliki.</p>
 
-            <label class="banner-form__wide">
-              <span>Wymagania i wytyczne (opcjonalnie)</span>
-              <textarea
-                name="uwagi"
-                data-config-input="notes"
-                rows="4"
-                placeholder="Opisz krótko swoje oczekiwania, np. kolorystyka, przykładowe strony, teksty na projekt..."
-              ></textarea>
-            </label>
+          <h3>4. Poprawki i prawa autorskie</h3>
+          <p>W cenie projektu uwzględniona jest określona liczba poprawek, ustalana przed rozpoczęciem prac.</p>
+          <p>Majątkowe prawa autorskie do projektów przechodzą na Klienta z chwilą pełnego uregulowania należności, o ile umowa zawarta przez Useme nie stanowi inaczej.</p>
 
-          </form>
-
-          <!-- Podsumowanie koszyka -->
-          <aside class="banner-includes reveal">
-            <div class="order-recap" aria-label="Podsumowanie zamówienia">
-              <h3>Podsumowanie zamówienia</h3>
-              <dl>
-                <div>
-                  <dt>Wybrany produkt</dt>
-                  <dd data-config-recap="product">Projekt Logo</dd>
-                </div>
-                <div class="config-recap-options" data-config-recap="options">
-                  <!-- Rendered dynamically -->
-                </div>
-                <div>
-                  <dt>Termin realizacji</dt>
-                  <dd data-config-recap="deadline">ok. 3-5 dni roboczych</dd>
-                </div>
-              </dl>
-            </div>
-
-            <div class="banner-price">
-              <span>Orientacyjna cena netto</span>
-              <strong data-config-recap="price">800 zł</strong>
-            </div>
-
-            <button class="btn btn--primary magnetic config-add-to-cart" type="button" data-config-add-to-cart>
-              <i data-lucide="shopping-cart" aria-hidden="true"></i>
-              <span>Dodaj do koszyka</span>
-            </button>
-            <p class="config-status-msg" data-config-status></p>
-          </aside>
+          <h3>5. Postanowienia końcowe</h3>
+          <p>W sprawach nieuregulowanych niniejszym regulaminem zastosowanie mają odpowiednie przepisy prawa polskiego.</p>
         </div>
       </section>
     </main>

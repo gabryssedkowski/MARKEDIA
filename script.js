@@ -1097,20 +1097,119 @@ function initCart() {
     });
   }
 
+  // Checkout Modal Logika
+  const checkoutOverlay = document.querySelector("[data-checkout-overlay]");
+  const checkoutCloseBtn = document.querySelector("[data-checkout-close]");
+  const checkoutTotal = document.querySelector("[data-checkout-total]");
+  const checkoutForm = document.getElementById("checkout-form");
+  const checkoutSubmitBtn = document.querySelector("[data-checkout-submit]");
+  const checkoutActions = document.querySelector("[data-checkout-actions]");
+  const checkoutLoader = document.querySelector("[data-checkout-loader]");
+  const checkoutSuccess = document.querySelector("[data-checkout-success]");
+  const checkoutSections = document.querySelectorAll(".checkout-section");
+  const checkoutOrderId = document.querySelector("[data-checkout-order-id]");
+
+  function openCheckout() {
+    if (cartState.items.length === 0 || !checkoutOverlay) return;
+
+    // Oblicz total jeszcze raz
+    let total = 0;
+    cartState.items.forEach(item => {
+      total += item.price * item.quantity;
+    });
+
+    if (checkoutTotal) checkoutTotal.textContent = `${total} zł`;
+
+    // Resetuj formularz i widoki modala do stanu poczatkowego
+    if (checkoutForm) checkoutForm.reset();
+    checkoutSections.forEach(s => s.style.display = "block");
+    if (checkoutActions) checkoutActions.style.display = "flex";
+    if (checkoutLoader) checkoutLoader.style.display = "none";
+    if (checkoutSuccess) checkoutSuccess.style.display = "none";
+    if (checkoutSubmitBtn) checkoutSubmitBtn.disabled = false;
+
+    checkoutOverlay.classList.add("is-open");
+    checkoutOverlay.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden"; // Blokuj scroll
+  }
+
+  function closeCheckout() {
+    if (!checkoutOverlay) return;
+    checkoutOverlay.classList.remove("is-open");
+    checkoutOverlay.setAttribute("aria-hidden", "true");
+
+    // Odblokuj scroll w zaleznosci od tego czy koszyk pod spodem jest otwarty
+    if (!drawer || !drawer.classList.contains("is-open")) {
+      document.body.style.overflow = "";
+    }
+  }
+
   if (checkoutBtn) {
     checkoutBtn.addEventListener("click", () => {
-      if (cartState.items.length === 0) return;
+      openCheckout();
+    });
+  }
 
-      let emailBody = "Dzień dobry, chciałbym złożyć zamówienie na następujące pakiety:\n\n";
-      cartState.items.forEach(item => {
-        emailBody += `- ${item.title} (x${item.quantity}) - ${item.price * item.quantity} zł\n`;
-        if (item.options && Array.isArray(item.options)) {
-          emailBody += `  Wybrane opcje:\n  ${item.options.join("\n  ")}\n`;
-        }
-      });
-      emailBody += `\nŁączna wartość: ${cartTotal.textContent}\n\nProszę o kontakt w celu finalizacji.`;
+  if (checkoutCloseBtn) {
+    checkoutCloseBtn.addEventListener("click", closeCheckout);
+  }
 
-      window.location.href = `mailto:markediapl@gmail.com?subject=Zamówienie z koszyka - Markedia&body=${encodeURIComponent(emailBody)}`;
+  if (checkoutOverlay) {
+    checkoutOverlay.addEventListener("click", (e) => {
+      if (e.target === checkoutOverlay) closeCheckout();
+    });
+  }
+
+  if (checkoutForm) {
+    checkoutForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Ukryj sekcje formularza, pokaz loader
+      checkoutSections.forEach(s => s.style.display = "none");
+      if (checkoutActions) checkoutActions.style.display = "none";
+      if (checkoutLoader) checkoutLoader.style.display = "flex";
+
+      // Symuluj przetwarzanie płatności (2 sekundy)
+      await new Promise(r => setTimeout(r, 2000));
+
+      // Tworzenie "payloadu" zamowienia na potrzeby np. backendu /api/banner-orders
+      const formData = new FormData(checkoutForm);
+      const orderPayload = {
+        title: "Zamówienie z Koszyka",
+        contact: formData.get("name"),
+        email: formData.get("email"),
+        phone: formData.get("phone") || "Brak",
+        quantity: cartState.items.reduce((sum, item) => sum + item.quantity, 0).toString(),
+        selectedBanner: "Wiele usług (Koszyk)",
+        template: "Koszyk",
+        format: "Różne",
+        notes: "Metoda płatności: " + formData.get("payment_method"),
+        brief: JSON.stringify(cartState.items, null, 2)
+      };
+
+      try {
+        // Probuj wyslac do istniejacego endpointu
+        const result = await requestJson("/api/banner-orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderPayload),
+        });
+
+        // Pokaz sukces i numer wygenerowany przez serwer
+        if (checkoutOrderId) checkoutOrderId.textContent = result.order.id;
+      } catch (err) {
+        // Fallback jesli serwer zwroci blad, generujemy losowy numer by symulacja na froncie zadzialala
+        const randomId = "MRK-PAY-" + Math.floor(Math.random() * 1000000);
+        if (checkoutOrderId) checkoutOrderId.textContent = randomId;
+      }
+
+      if (checkoutLoader) checkoutLoader.style.display = "none";
+      if (checkoutSuccess) checkoutSuccess.style.display = "flex";
+
+      // Wyczysc koszyk
+      cartState.items = [];
+      saveCart();
+      updateCartUI();
     });
   }
 

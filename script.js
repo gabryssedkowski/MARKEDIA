@@ -1200,6 +1200,23 @@ function initProductConfigurator() {
       window.lucide.createIcons();
     }
 
+    const dynamicRevealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            dynamicRevealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -8% 0px" }
+    );
+
+    storeProductsGrid.querySelectorAll('.reveal').forEach((item, index) => {
+      item.style.transitionDelay = `${Math.min(index % 4, 3) * 90}ms`;
+      dynamicRevealObserver.observe(item);
+    });
+
     // Add event listeners to newly created "Konfiguruj" buttons
     const configBtns = storeProductsGrid.querySelectorAll("[data-open-config]");
     configBtns.forEach(btn => {

@@ -1154,13 +1154,14 @@ function initProductConfigurator() {
                  label: b.title,
                  price: 0,
                  deadline: 0,
-                 value: b.id
+                 value: b.id,
+                 image: b.image
               }));
 
               dynamicFields.splice(1, 0, {
                  id: "bannerTemplate",
                  label: "Wybierz gotowy projekt",
-                 type: "select",
+                 type: "visual_select",
                  options: bannerOptions
               });
            }
@@ -1188,6 +1189,22 @@ function initProductConfigurator() {
             <select id="${field.id}" name="${field.id}" data-config-input>
               ${optionsHtml}
             </select>
+          </div>
+        `;
+      } else if (field.type === "visual_select") {
+        const optionsHtml = field.options.map((opt, idx) => `
+          <div class="config-visual-card ${idx === 0 ? 'is-active' : ''}" data-visual-option="${idx}">
+            <img src="${opt.image || 'assets/catalog/placeholder.svg'}" alt="${opt.label}" loading="lazy" />
+            <span>${opt.label}</span>
+          </div>
+        `).join("");
+        fieldHtml = `
+          <div class="config-field-group full-width">
+            <label>${field.label}</label>
+            <div class="config-visual-grid" id="${field.id}-container">
+              ${optionsHtml}
+            </div>
+            <input type="hidden" id="${field.id}" name="${field.id}" value="0" data-config-input>
           </div>
         `;
       } else if (field.type === "checkbox") {
@@ -1229,6 +1246,23 @@ function initProductConfigurator() {
     }
 
     attachInputListeners();
+
+    // Attach listeners for visual selects
+    document.querySelectorAll('.config-visual-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        const container = e.currentTarget.closest('.config-visual-grid');
+        const hiddenInput = container.nextElementSibling;
+
+        container.querySelectorAll('.config-visual-card').forEach(c => c.classList.remove('is-active'));
+        e.currentTarget.classList.add('is-active');
+
+        hiddenInput.value = e.currentTarget.dataset.visualOption;
+
+        // Trigger change event to update recap
+        hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+
     updateRecap();
   };
 
@@ -1273,7 +1307,7 @@ function initProductConfigurator() {
       const input = document.getElementById(field.id);
       if (!input) return;
 
-      if (field.type === "select") {
+      if (field.type === "select" || field.type === "visual_select") {
         const selectedOpt = field.options[parseInt(input.value, 10)];
         if(selectedOpt) {
             currentPrice += selectedOpt.price;

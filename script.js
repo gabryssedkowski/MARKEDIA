@@ -1102,7 +1102,6 @@ function initProductConfigurator() {
   const form = document.querySelector("[data-configurator-form]");
   if (!form) return;
 
-  const categoryBtns = document.querySelectorAll("[data-config-category]");
   const dynamicFieldsContainer = document.querySelector("[data-configurator-fields]");
   const recapProduct = document.querySelector('[data-config-recap="product"]');
   const recapOptions = document.querySelector('[data-config-recap="options"]');
@@ -1119,6 +1118,160 @@ function initProductConfigurator() {
   let currentBannerCatalog = null;
   let dynamicFields = [];
   let selectedBannerCategoryIndex = 0;
+
+  // --- STORE LOGIC ---
+  const storeView = document.getElementById("store-view");
+  const configuratorView = document.getElementById("configurator-view");
+  const backToStoreBtn = document.getElementById("back-to-store");
+  const storeCategoriesBtns = document.querySelectorAll("[data-store-category]");
+  const storeProductsGrid = document.getElementById("store-products-grid");
+  const configProductTitle = document.getElementById("configurator-product-title");
+
+  const storeProducts = {
+    logo: [
+      { id: "logo-basic", title: "Projekt Logo", desc: "Profesjonalne logo dla Twojej marki. Odśwież swój wizerunek.", price: 800, badge: "Popularne", img: "assets/placeholder-logo.jpg", configCat: "logo" }
+    ],
+    baner: [
+      { id: "baner-budowlany", title: "Baner Budowlany", desc: "Wytrzymały baner dla firm remontowych i budowlanych.", price: 150, badge: "Popularne", img: "assets/placeholder-baner.jpg", configCat: "baner" },
+      { id: "baner-mechanik", title: "Baner Mechanik", desc: "Zwiększ widoczność swojego warsztatu samochodowego.", price: 150, badge: "", img: "assets/placeholder-baner.jpg", configCat: "baner" },
+      { id: "baner-beauty", title: "Baner Beauty", desc: "Elegancki baner dla salonów kosmetycznych i fryzjerskich.", price: 150, badge: "Nowość", img: "assets/placeholder-baner.jpg", configCat: "baner" },
+      { id: "baner-gastronomia", title: "Baner Gastronomia", desc: "Apetyczny projekt banera dla restauracji i food trucków.", price: 150, badge: "", img: "assets/placeholder-baner.jpg", configCat: "baner" },
+      { id: "baner-transport", title: "Baner Transport", desc: "Czytelny baner dla firm transportowych i logistycznych.", price: 150, badge: "", img: "assets/placeholder-baner.jpg", configCat: "baner" },
+      { id: "baner-sklep", title: "Baner Sklep Internetowy", desc: "Promuj swój e-commerce w przestrzeni miejskiej.", price: 150, badge: "Nowość", img: "assets/placeholder-baner.jpg", configCat: "baner" },
+      { id: "baner-uniwersalny", title: "Baner Uniwersalny", desc: "Czysty, uniwersalny projekt dostosowany do każdej branży.", price: 150, badge: "", img: "assets/placeholder-baner.jpg", configCat: "baner" }
+    ],
+    wizytowka: [
+      { id: "wizytowka-basic", title: "Projekt Wizytówki", desc: "Zrób świetne pierwsze wrażenie. Eleganckie i nowoczesne.", price: 100, badge: "", img: "assets/placeholder-wizytowka.jpg", configCat: "wizytowka" }
+    ],
+    ulotka: [
+       { id: "ulotka-basic", title: "Projekt Ulotki", desc: "Skuteczna reklama w formacie papierowym. Różne formaty.", price: 200, badge: "", img: "assets/placeholder-ulotka.jpg", configCat: "ulotka" }
+    ],
+    social: [
+       { id: "social-basic", title: "Projekt Social Media", desc: "Spójny wizerunek na Facebooku, Instagramie i LinkedInie.", price: 300, badge: "Popularne", img: "assets/placeholder-social.jpg", configCat: "social" }
+    ],
+    www: [
+       { id: "www-basic", title: "Projekt Strony WWW", desc: "Nowoczesna, responsywna strona szyta na miarę.", price: 2000, badge: "", img: "assets/placeholder-www.jpg", configCat: "www" }
+    ],
+    inne: [
+       { id: "inne-basic", title: "Inny Projekt", desc: "Nie znalazłeś tego, czego szukasz? Skontaktuj się z nami.", price: 0, badge: "", img: "assets/placeholder-inne.jpg", configCat: "inne" }
+    ]
+  };
+
+  let currentStoreCategory = "logo";
+
+  const renderStoreProducts = () => {
+    if (!storeProductsGrid) return;
+    const products = storeProducts[currentStoreCategory] || [];
+    storeProductsGrid.innerHTML = "";
+
+    products.forEach(prod => {
+      const card = document.createElement("div");
+      card.className = "product-card reveal";
+
+      const badgeHtml = prod.badge ? `<div class="product-badge ${prod.badge === 'Nowość' ? 'product-badge--new' : 'product-badge--popular'}">${prod.badge}</div>` : '';
+
+      const priceText = prod.price > 0 ? `${prod.price} zł` : "Wycena";
+
+      card.innerHTML = `
+        <div class="product-card__image">
+          ${badgeHtml}
+          <!-- Używamy szarego tła jako placeholdera w razie braku obrazka -->
+          <img src="${prod.img}" alt="${prod.title}" onerror="this.style.display='none'">
+        </div>
+        <div class="product-card__content">
+          <h3 class="product-card__title">${prod.title}</h3>
+          <p class="product-card__desc">${prod.desc}</p>
+          <div class="product-card__footer">
+            <div class="product-card__price">
+              <span>Cena od</span>
+              <strong>${priceText}</strong>
+            </div>
+            <button class="product-card__btn magnetic" type="button" data-open-config="${prod.configCat}" data-product-title="${prod.title}">
+              <span>Konfiguruj</span>
+              <i data-lucide="arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      storeProductsGrid.appendChild(card);
+    });
+
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+
+    // Add event listeners to newly created "Konfiguruj" buttons
+    const configBtns = storeProductsGrid.querySelectorAll("[data-open-config]");
+    configBtns.forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const cat = e.currentTarget.dataset.openConfig;
+        const pTitle = e.currentTarget.dataset.productTitle;
+        openConfigurator(cat, pTitle);
+      });
+    });
+  };
+
+  const openConfigurator = (category, productTitle) => {
+    if (storeView && configuratorView) {
+      storeView.classList.add("hidden");
+      configuratorView.classList.remove("hidden");
+      configuratorView.style.display = "block";
+
+      if(configProductTitle) {
+          configProductTitle.textContent = `Konfigurujesz: ${productTitle}`;
+      }
+
+      // Scroll do konfiguratora
+      configuratorView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      currentCategory = category;
+
+      const iconMap = {
+          logo: "pen-tool",
+          baner: "layout-template",
+          wizytowka: "contact",
+          ulotka: "file-text",
+          social: "instagram",
+          www: "monitor",
+          inne: "more-horizontal"
+      };
+
+      const iconEl = document.querySelector(".illustration-icon");
+      if(iconEl && window.lucide) {
+          iconEl.setAttribute("data-lucide", iconMap[currentCategory] || "layers");
+          window.lucide.createIcons();
+      }
+
+      renderFields();
+    }
+  };
+
+  if (backToStoreBtn) {
+    backToStoreBtn.addEventListener("click", () => {
+      if (storeView && configuratorView) {
+        configuratorView.classList.add("hidden");
+        configuratorView.style.display = "none";
+        storeView.classList.remove("hidden");
+        storeView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+
+  if (storeCategoriesBtns.length > 0) {
+    storeCategoriesBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        storeCategoriesBtns.forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        currentStoreCategory = btn.dataset.storeCategory;
+        renderStoreProducts();
+      });
+    });
+
+    // Inicjalizacja widoku sklepu
+    renderStoreProducts();
+  }
+  // --- END STORE LOGIC ---
+
 
   const renderFields = async () => {
     const product = productCatalog[currentCategory];
@@ -1378,31 +1531,7 @@ function initProductConfigurator() {
     }
   };
 
-  categoryBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      categoryBtns.forEach(b => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-      currentCategory = btn.dataset.configCategory;
 
-      const iconMap = {
-          logo: "pen-tool",
-          baner: "layout-template",
-          wizytowka: "contact",
-          ulotka: "file-text",
-          social: "instagram",
-          www: "monitor",
-          inne: "more-horizontal"
-      };
-
-      const iconEl = document.querySelector(".illustration-icon");
-      if(iconEl && window.lucide) {
-          iconEl.setAttribute("data-lucide", iconMap[currentCategory] || "layers");
-          window.lucide.createIcons();
-      }
-
-      renderFields();
-    });
-  });
 
   addToCartBtn.addEventListener("click", () => {
     const product = productCatalog[currentCategory];

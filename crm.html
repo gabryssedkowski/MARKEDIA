@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="crm.css">
+</head>
+<body>
+
+<div class="crm-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active"><i data-lucide="search"></i></a>
+            <a href="#" class="nav-item"><i data-lucide="share-2"></i></a>
+            <a href="#" class="nav-item"><i data-lucide="star"></i></a>
+            <a href="#" class="nav-item"><i data-lucide="bookmark"></i></a>
+            <a href="#" class="nav-item"><i data-lucide="grid"></i></a>
+            <a href="#" class="nav-item"><i data-lucide="layers"></i></a>
+            <a href="#" class="nav-item"><i data-lucide="settings"></i></a>
+            <a href="index.html" class="nav-item" title="Wróć do Markedia"><i data-lucide="shield"></i></a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <div class="brand">salesforce</div>
+            </div>
+            <nav class="header-nav">
+                <a href="#">Book Summaries</a>
+                <a href="#">Founders</a>
+                <a href="#">Finance</a>
+                <a href="#" class="active">Contacts</a>
+                <a href="#">Growth</a>
+                <a href="#">Contact</a>
+                <a href="#">Projects</a>
+            </nav>
+            <div class="header-right">
+                <button class="icon-btn"><i data-lucide="bell"></i></button>
+                <button class="icon-btn"><i data-lucide="settings"></i></button>
+                <div class="profile-pic" id="header-profile-pic">
+                    <img src="https://i.pravatar.cc/150?img=11" alt="Profile">
+                </div>
+            </div>
+        </header>
+
+        <!-- Sub Header -->
+        <div class="sub-header">
+            <button class="back-btn"><i data-lucide="arrow-left"></i></button>
+            <h1 class="page-title">Customer<br>Information</h1>
+
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-icon"><i data-lucide="briefcase"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value">$1,980,130 <span class="badge positive">+21% week</span></div>
+                        <div class="stat-desc">Won from 78 Deals<br>This Month</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i data-lucide="user"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value">-89 <span class="badge negative">-7% week</span></div>
+                        <div class="stat-desc">New Customer<br>For Week</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i data-lucide="target"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value">+31 <span class="badge neutral">+10% week</span></div>
+                        <div class="stat-desc">New Tasks<br>For Week</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+
+            <!-- Interaction History -->
+            <section class="panel interaction-history">
+                <div class="panel-header">
+                    <h2>Interaction History / Spis zamówień</h2>
+                    <div class="panel-actions">
+                        <button><i data-lucide="minus"></i></button>
+                        <button><i data-lucide="maximize-2"></i></button>
+                    </div>
+                </div>
+
+                <div class="history-grid" id="orders-grid">
+                    <!-- Orders will be injected here via JS -->
+                </div>
+            </section>
+
+            <!-- Detailed Information (Profile) -->
+            <section class="panel detailed-info-panel">
+                 <div class="panel-header">
+                    <div class="panel-actions left">
+                        <button><i data-lucide="share-2"></i></button>
+                        <button><i data-lucide="upload"></i></button>
+                    </div>
+                    <div class="panel-actions">
+                        <button><i data-lucide="minus"></i></button>
+                        <button><i data-lucide="maximize-2"></i></button>
+                    </div>
+                </div>
+
+                <div class="profile-large">
+                    <div class="profile-avatar-container">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="Profile" id="main-profile-img">
+                        <label for="avatar-upload" class="avatar-edit-btn">
+                            <i data-lucide="camera"></i>
+                        </label>
+                        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                    </div>
+                    <h3 id="admin-name">Eva Robinson</h3>
+                    <p class="profile-title" id="admin-title-text">CEO, Inc. Alabama Machinery<br>& Supply</p>
+                </div>
+
+                <div class="profile-actions">
+                    <button><i data-lucide="message-square"></i></button>
+                    <button><i data-lucide="mail"></i></button>
+                    <button><i data-lucide="phone"></i></button>
+                    <button><i data-lucide="plus"></i></button>
+                    <button><i data-lucide="camera"></i></button>
+                    <button><i data-lucide="calendar"></i></button>
+                </div>
+
+                <div class="panel-header" style="margin-top: 2rem;">
+                    <h2>Detailed Information</h2>
+                    <div class="panel-actions">
+                        <button id="edit-admin-info-btn"><i data-lucide="edit-2"></i></button>
+                        <button><i data-lucide="maximize-2"></i></button>
+                    </div>
+                </div>
+
+                <div class="info-list">
+                    <div class="info-item">
+                        <i data-lucide="user"></i>
+                        <div class="info-text">
+                            <label>First Name</label>
+                            <span id="admin-first-name">Eva</span>
+                        </div>
+                        <button class="edit-field-btn"><i data-lucide="edit-2"></i></button>
+                    </div>
+                    <div class="info-item">
+                        <i data-lucide="user"></i>
+                        <div class="info-text">
+                            <label>Last Name</label>
+                            <span id="admin-last-name">Robinson</span>
+                        </div>
+                        <button class="edit-field-btn"><i data-lucide="edit-2"></i></button>
+                    </div>
+                    <div class="info-item">
+                        <i data-lucide="mail"></i>
+                        <div class="info-text">
+                            <label>Email</label>
+                            <span id="admin-email">Evao@alabamamachinery.com</span>
+                        </div>
+                        <button class="add-field-btn"><i data-lucide="plus"></i></button>
+                    </div>
+                     <div class="info-item">
+                        <i data-lucide="phone"></i>
+                        <div class="info-text">
+                            <label>Phone Number</label>
+                            <span id="admin-phone">+911 120 222 313</span>
+                        </div>
+                        <button class="add-field-btn"><i data-lucide="plus"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tasks Schedule -->
+            <section class="panel tasks-schedule">
+                <div class="panel-header">
+                    <h2>Tasks Schedule / Kalendarz</h2>
+                    <div class="panel-actions">
+                        <button><i data-lucide="minus"></i></button>
+                        <button><i data-lucide="maximize-2"></i></button>
+                    </div>
+                </div>
+
+                <div class="calendar-header">
+                    <div class="cal-nav">
+                        <button><i data-lucide="chevron-left"></i></button>
+                        <button><i data-lucide="chevron-right"></i></button>
+                    </div>
+                    <div class="cal-month">October</div>
+                    <button class="cal-expand"><i data-lucide="maximize-2"></i></button>
+                </div>
+
+                <div class="calendar-grid">
+                    <!-- Week 1 -->
+                    <div class="cal-day">1 <div class="dots"><span class="dot img-dot" style="background-image:url('https://i.pravatar.cc/150?img=1')"></span></div></div>
+                    <div class="cal-day">2 <div class="dots"><span class="dot img-dot" style="background-image:url('https://i.pravatar.cc/150?img=2')"></span></div></div>
+                    <div class="cal-day">3</div>
+                    <div class="cal-day active-blue">4 <div class="dots"><span class="dot img-dot" style="background-image:url('https://i.pravatar.cc/150?img=3')"></span></div></div>
+                    <div class="cal-day">5</div>
+                    <div class="cal-day">6</div>
+                    <div class="cal-day">7</div>
+                    <!-- Week 2 -->
+                    <div class="cal-day">8</div>
+                    <div class="cal-day">9</div>
+                    <div class="cal-day">10</div>
+                    <div class="cal-day active-yellow">11 <div class="dots"><span class="dot img-dot" style="background-image:url('https://i.pravatar.cc/150?img=4')"></span></div></div>
+                    <div class="cal-day active-yellow">12 <div class="dots"><span class="dot img-dot" style="background-image:url('https://i.pravatar.cc/150?img=5')"></span></div></div>
+                    <div class="cal-day">13</div>
+                    <div class="cal-day">14</div>
+                    <!-- Week 3 -->
+                    <div class="cal-day">15</div>
+                    <div class="cal-day active-teal">16 <div class="dots"><span class="dot img-dot" style="background-image:url('https://i.pravatar.cc/150?img=6')"></span></div></div>
+                    <div class="cal-day">17</div>
+                    <div class="cal-day">18</div>
+                    <div class="cal-day">19</div>
+                    <div class="cal-day">20</div>
+                    <div class="cal-day">21</div>
+                </div>
+            </section>
+
+            <!-- Stage Funnel -->
+            <section class="panel stage-funnel">
+                <div class="panel-header">
+                    <h2>Stage Funnel</h2>
+                    <div class="panel-actions">
+                        <button><i data-lucide="minus"></i></button>
+                        <button><i data-lucide="maximize-2"></i></button>
+                    </div>
+                </div>
+
+                <div class="funnel-header">
+                    <div class="funnel-total">
+                        <h3>$350,500</h3>
+                        <p>Total in Pipeline</p>
+                    </div>
+                    <div class="funnel-toggle">
+                        <button class="active">Weighted</button>
+                        <button>Total</button>
+                    </div>
+                </div>
+
+                <div class="funnel-stages">
+                    <div class="stage" style="width: 100%;">
+                        <div class="stage-info">
+                            <span class="stage-name">Qualification</span>
+                            <span class="stage-val">92,350$</span>
+                        </div>
+                        <button><i data-lucide="maximize-2"></i></button>
+                    </div>
+                    <div class="stage" style="width: 85%;">
+                        <div class="stage-info">
+                            <span class="stage-name">Royal Package Opportunity</span>
+                            <span class="stage-val">67,120$</span>
+                        </div>
+                        <button><i data-lucide="maximize-2"></i></button>
+                    </div>
+                    <div class="stage" style="width: 70%;">
+                        <div class="stage-info">
+                            <span class="stage-name">Value Proposition</span>
+                            <span class="stage-val">28,980$</span>
+                        </div>
+                        <button><i data-lucide="maximize-2"></i></button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<!-- Modal for changing status -->
+<div id="status-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Zmień status zamówienia</h2>
+        <select id="new-status-select">
+            <option value="nowe">Nowe</option>
+            <option value="w_realizacji">W trakcie</option>
+            <option value="gotowe">Gotowe do wysyłki</option>
+            <option value="wyslane">Wysłane</option>
+        </select>
+        <button id="save-status-btn" class="btn btn-primary">Zapisz</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+</script>
+<script src="crm.js"></script>
+</body>
+</html>

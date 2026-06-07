@@ -20,13 +20,13 @@
             </svg>
         </div>
         <nav class="sidebar-nav">
-            <a href="#" class="nav-item active"><i data-lucide="search"></i></a>
-            <a href="#" class="nav-item"><i data-lucide="share-2"></i></a>
-            <a href="#" class="nav-item"><i data-lucide="star"></i></a>
-            <a href="#" class="nav-item"><i data-lucide="bookmark"></i></a>
-            <a href="#" class="nav-item"><i data-lucide="grid"></i></a>
-            <a href="#" class="nav-item"><i data-lucide="layers"></i></a>
-            <a href="#" class="nav-item"><i data-lucide="settings"></i></a>
+            <a href="#" class="nav-item" data-action="search" title="Szukaj"><i data-lucide="search"></i></a>
+            <a href="#" class="nav-item" data-action="export" title="Eksportuj Zamówienia"><i data-lucide="share-2"></i></a>
+            <a href="#" class="nav-item" data-action="filter-starred" title="Wyróżnione"><i data-lucide="star"></i></a>
+            <a href="#" class="nav-item" data-action="filter-bookmarked" title="Zapisane"><i data-lucide="bookmark"></i></a>
+            <a href="#" class="nav-item active" data-action="view-grid" title="Widok siatki"><i data-lucide="grid"></i></a>
+            <a href="#" class="nav-item" data-action="view-list" title="Widok listy"><i data-lucide="layers"></i></a>
+            <a href="#" class="nav-item" data-action="settings" title="Ustawienia"><i data-lucide="settings"></i></a>
             <a href="index.html" class="nav-item" title="Wróć do Markedia"><i data-lucide="shield"></i></a>
         </nav>
     </aside>
@@ -45,8 +45,12 @@
                 <a href="index.html">Strona Główna</a>
             </nav>
             <div class="header-right">
+                <div class="search-container" id="search-container" style="display: none;">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="order-search-input" placeholder="Szukaj...">
+                    <button id="close-search-btn"><i data-lucide="x"></i></button>
+                </div>
                 <button class="icon-btn" onclick="loadOrders()" title="Odśwież zamówienia"><i data-lucide="refresh-cw"></i></button>
-                <button class="icon-btn"><i data-lucide="settings"></i></button>
                 <div class="profile-pic" id="header-profile-pic">
                     <img src="https://i.pravatar.cc/150?img=11" alt="Profile">
                 </div>
@@ -286,12 +290,41 @@
             <option value="w_realizacji">W trakcie</option>
             <option value="gotowe">Gotowe do wysyłki</option>
             <option value="wyslane">Wysłane</option>
+            <option value="zakonczone">Zakończone</option>
+            <option value="anulowane">Anulowane</option>
         </select>
         <button id="save-status-btn" class="btn btn-primary">Zapisz</button>
     </div>
 </div>
 
+<!-- Modal for Settings -->
+<div id="settings-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close-settings-modal" style="float:right; cursor:pointer; font-size:1.5rem;">&times;</span>
+        <h2>Ustawienia Systemowe</h2>
+        <p style="color:var(--text-muted); margin-bottom: 20px;">Zarządzaj danymi i widokiem systemu CRM.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card-light); border-radius: 8px;">
+                <div>
+                    <strong style="display:block;">Wyczyść historię zamówień</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Trwale usunie wszystkie zamówienia.</span>
+                </div>
+                <button id="clear-orders-btn" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Wyczyść</button>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card-light); border-radius: 8px;">
+                <div>
+                    <strong style="display:block;">Zresetuj profil admina</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Przywróć domyślne dane profilu.</span>
+                </div>
+                <button id="reset-profile-btn" style="background: transparent; color: var(--text-main); border: 1px solid var(--panel-border); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Zresetuj</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>
   lucide.createIcons();
 </script>

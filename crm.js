@@ -1,11 +1,15 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     loadOrders();
     initAdminProfile();
     initModal();
+    initSidebar();
 });
 
 let ordersData = [];
 let currentOrderIdForStatus = null;
+let currentFilter = "all";
+let searchTerm = "";
+let layoutMode = "grid";
 
 function getOrdersFromStorage() {
     try {
@@ -66,14 +70,29 @@ function renderOrders() {
     const grid = document.getElementById('orders-grid');
     if (!grid) return;
 
-    if (ordersData.length === 0) {
+    let filteredOrders = ordersData.filter(order => {
+        let matchesSearch = true;
+        if (searchTerm) {
+            const textToSearch = ((order.customer?.contact || order.contact || '') + ' ' + (order.title || '') + ' ' + (order.items?.map(i => i.title).join(' ') || '')).toLowerCase();
+            matchesSearch = textToSearch.includes(searchTerm.toLowerCase());
+        }
+        let matchesFilter = true;
+        if (currentFilter === 'starred') {
+            matchesFilter = !!order.isStarred;
+        } else if (currentFilter === 'bookmarked') {
+            matchesFilter = !!order.isBookmarked;
+        }
+        return matchesSearch && matchesFilter;
+    });
+
+    if (filteredOrders.length === 0) {
         grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Brak zamówień.</p>';
         return;
     }
 
     const cardColors = ['blue', 'teal', 'black', 'yellow', 'bg-light'];
 
-    grid.innerHTML = ordersData.map((order, index) => {
+    grid.innerHTML = filteredOrders.map((order, index) => {
         const date = new Date(order.createdAt).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric', year: 'numeric' });
         const colorClass = cardColors[index % cardColors.length];
         const statusMap = {
@@ -97,7 +116,7 @@ function renderOrders() {
         }
 
         return `
-            <div class="history-card ${colorClass}" onclick="openStatusModal('${order.id}')">
+            <div class="history-card ${colorClass}" onclick="if(!event.target.closest('.card-icon-btn')) openStatusModal('${order.id}')">
                 <div class="card-date" style="font-weight: 600;">${date} &bull; ${displayStatus}</div>
                 <div class="card-title" style="margin-top: 0.5rem; font-size: 1.1rem;">${clientName}</div>
                 <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 1rem; line-height: 1.3;">
@@ -106,6 +125,11 @@ function renderOrders() {
                 <div class="card-amount" style="font-size: 1.25rem;">${totalVal} zł</div>
 
                 <div class="card-action"><i data-lucide="${colorClass === 'black' ? 'arrow-up-right' : 'more-horizontal'}"></i></div>
+
+                <div class="card-actions-group">
+                    <button class="card-icon-btn star-btn ${order.isStarred ? 'active' : ''}" onclick="toggleOrderFlag('${order.id}', 'isStarred', event)" title="Wyróżnij"><i data-lucide="star"></i></button>
+                    <button class="card-icon-btn bookmark-btn ${order.isBookmarked ? 'active' : ''}" onclick="toggleOrderFlag('${order.id}', 'isBookmarked', event)" title="Zapisz"><i data-lucide="bookmark"></i></button>
+                </div>
 
                 <div class="card-avatars">
                     <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--paper); color: var(--foreground); display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -118,6 +142,13 @@ function renderOrders() {
 
     if (window.lucide) {
         window.lucide.createIcons();
+    }
+
+    if (window.gsap) {
+        gsap.fromTo('.history-card',
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: 'power2.out', clearProps: 'all' }
+        );
     }
 }
 
@@ -140,6 +171,140 @@ function initModal() {
             modal.style.display = 'none';
         }
     }
+}
+
+window.toggleOrderFlag = function(orderId, flag, event) {
+    event.stopPropagation();
+    const order = ordersData.find(o => o.id === orderId);
+    if (order) {
+        order[flag] = !order[flag];
+        saveOrdersToStorage(ordersData);
+
+        const btn = event.currentTarget;
+        if(window.gsap) {
+            gsap.to(btn, { scale: 1.2, duration: 0.1, yoyo: true, repeat: 1, onComplete: renderOrders });
+        } else {
+            renderOrders();
+        }
+    }
+}
+
+function initSidebar() {
+    const navItems = document.querySelectorAll('.sidebar-nav .nav-item[data-action]');
+    const searchContainer = document.getElementById('search-container');
+    const searchInput = document.getElementById('order-search-input');
+    const closeSearchBtn = document.getElementById('close-search-btn');
+    const grid = document.getElementById('orders-grid');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const action = item.getAttribute('data-action');
+
+            if(window.gsap) {
+                gsap.fromTo(item, { scale: 0.9 }, { scale: 1, duration: 0.3, ease: 'back.out(1.7)' });
+            }
+
+            if (['filter-starred', 'filter-bookmarked', 'view-grid', 'view-list'].includes(action)) {
+                if (['view-grid', 'view-list'].includes(action)) {
+                    document.querySelectorAll('.sidebar-nav .nav-item[data-action="view-grid"], .sidebar-nav .nav-item[data-action="view-list"]').forEach(n => n.classList.remove('active'));
+                    item.classList.add('active');
+                } else {
+                    if(item.classList.contains('active')) {
+                        item.classList.remove('active');
+                        currentFilter = 'all';
+                    } else {
+                        document.querySelectorAll('.sidebar-nav .nav-item[data-action="filter-starred"], .sidebar-nav .nav-item[data-action="filter-bookmarked"]').forEach(n => n.classList.remove('active'));
+                        item.classList.add('active');
+                        currentFilter = action === 'filter-starred' ? 'starred' : 'bookmarked';
+                    }
+                    renderOrders();
+                }
+            }
+
+            switch (action) {
+                case 'search':
+                    if (searchContainer.style.display === 'none') {
+                        searchContainer.style.display = 'flex';
+                        if(window.gsap) {
+                            gsap.fromTo(searchContainer, {width: 0, opacity: 0}, {width: 220, opacity: 1, duration: 0.4, ease: 'power2.out'});
+                        }
+                        searchInput.focus();
+                    } else {
+                        if(window.gsap) {
+                            gsap.to(searchContainer, {width: 0, opacity: 0, duration: 0.3, ease: 'power2.in', onComplete: () => { searchContainer.style.display = 'none'; }});
+                        } else {
+                            searchContainer.style.display = 'none';
+                        }
+                        searchTerm = '';
+                        searchInput.value = '';
+                        renderOrders();
+                    }
+                    break;
+                case 'export':
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(ordersData, null, 2));
+                    const downloadAnchorNode = document.createElement('a');
+                    downloadAnchorNode.setAttribute("href", dataStr);
+                    downloadAnchorNode.setAttribute("download", "markedia_orders.json");
+                    document.body.appendChild(downloadAnchorNode);
+                    downloadAnchorNode.click();
+                    downloadAnchorNode.remove();
+                    break;
+                case 'view-grid':
+                    layoutMode = 'grid';
+                    grid.classList.remove('list-view');
+                    renderOrders();
+                    break;
+                case 'view-list':
+                    layoutMode = 'list';
+                    grid.classList.add('list-view');
+                    renderOrders();
+                    break;
+                case 'settings':
+                    document.getElementById('settings-modal').style.display = 'flex';
+                    break;
+            }
+        });
+    });
+
+    if(searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            renderOrders();
+        });
+    }
+
+    if(closeSearchBtn) {
+        closeSearchBtn.addEventListener('click', () => {
+            if(window.gsap) {
+                gsap.to(searchContainer, {width: 0, opacity: 0, duration: 0.3, ease: 'power2.in', onComplete: () => { searchContainer.style.display = 'none'; }});
+            } else {
+                searchContainer.style.display = 'none';
+            }
+            searchTerm = '';
+            searchInput.value = '';
+            renderOrders();
+        });
+    }
+
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettings = document.querySelector('.close-settings-modal');
+    if(closeSettings) closeSettings.onclick = () => settingsModal.style.display = 'none';
+    document.getElementById('clear-orders-btn')?.addEventListener('click', () => {
+        if(confirm('Na pewno chcesz usunąć wszystkie zamówienia?')) {
+            localStorage.removeItem('markedia-orders');
+            ordersData = [];
+            loadOrders();
+            settingsModal.style.display = 'none';
+        }
+    });
+    document.getElementById('reset-profile-btn')?.addEventListener('click', () => {
+        if(confirm('Zresetować profil admina do domyślnego?')) {
+            localStorage.removeItem('crm_admin_profile');
+            initAdminProfile();
+            settingsModal.style.display = 'none';
+        }
+    });
 }
 
 window.openStatusModal = function(orderId) {

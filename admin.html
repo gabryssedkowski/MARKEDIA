@@ -78,15 +78,28 @@
         </div>
 
         <div class="admin-card admin-list reveal" style="margin-bottom: 2rem;">
-          <div class="admin-list__top">
+          <div class="admin-list__top" style="flex-wrap: wrap; gap: 1rem;">
             <div>
               <p class="eyebrow">CRM</p>
               <h2>Zarządzanie zamówieniami</h2>
             </div>
-            <button class="btn btn--ghost" type="button" data-admin-refresh-orders>
-              <i data-lucide="refresh-cw" aria-hidden="true"></i>
-              <span>Odśwież</span>
-            </button>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                <input type="text" id="admin-order-search" placeholder="Szukaj: ID, email, tel..." style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground); min-width: 220px; font-family: inherit;">
+                <select id="admin-order-filter" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground); font-family: inherit;">
+                    <option value="all">Wszystkie statusy</option>
+                    <option value="nowe">Nowe</option>
+                    <option value="w_realizacji">W realizacji</option>
+                    <option value="zakonczone">Zakończone</option>
+                    <option value="anulowane">Anulowane</option>
+                </select>
+                <button class="btn btn--outline" type="button" id="admin-export-csv" style="padding: 0.5rem 1rem;">
+                  <i data-lucide="download" aria-hidden="true"></i>
+                  <span>Export CSV</span>
+                </button>
+                <button class="btn btn--ghost" type="button" data-admin-refresh-orders style="padding: 0.5rem 1rem;">
+                  <i data-lucide="refresh-cw" aria-hidden="true"></i>
+                </button>
+            </div>
           </div>
           <div class="admin-order-list" data-admin-order-list></div>
         </div>

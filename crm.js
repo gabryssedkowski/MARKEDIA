@@ -564,7 +564,9 @@ function getProgressSteps(status) {
 function renderClientOrders() {
     const grid = document.getElementById('client-orders-grid');
     const emptyState = document.getElementById('client-empty-state');
+    const totalCountEl = document.getElementById('client-total-count');
     const activeCountEl = document.getElementById('client-active-count');
+    const completedCountEl = document.getElementById('client-completed-count');
     const totalValEl = document.getElementById('client-total-value');
 
     if (!grid || !emptyState) return;
@@ -589,13 +591,18 @@ function renderClientOrders() {
     });
 
     // Update Stats
-    const activeCount = ordersData.filter(o => ['w_realizacji', 'gotowe'].includes(o.status)).length;
-    activeCountEl.innerText = activeCount;
+    if (totalCountEl) totalCountEl.innerText = ordersData.length;
+
+    const activeCount = ordersData.filter(o => ['w_realizacji', 'gotowe', 'do_akceptacji'].includes(o.status)).length;
+    if (activeCountEl) activeCountEl.innerText = activeCount;
+
+    const completedCount = ordersData.filter(o => ['zakonczone', 'wyslane'].includes(o.status)).length;
+    if (completedCountEl) completedCountEl.innerText = completedCount;
 
     const totalValue = ordersData.reduce((sum, order) => {
         return sum + (order.items || []).reduce((itemSum, item) => itemSum + (item.price || 0) * (item.quantity || 1), 0);
     }, 0);
-    totalValEl.innerText = totalValue + '$';
+    if (totalValEl) totalValEl.innerText = totalValue + '$';
 
     if (filtered.length === 0) {
         grid.style.display = 'none';
@@ -709,10 +716,192 @@ function openClientModal(order) {
         <p><strong>Uwagi:</strong> Projekty w trakcie analizy zapotrzebowania klienta. Wszelkie uwagi prosimy przesyłać na adres mailowy.</p>
     `;
 
+    // Advanced Timeline
+    renderAdvancedTimeline(order.status);
+
+    // Chat / Messages
+    renderClientChat(order.id);
+
+    // Files (Categorized)
+    renderClientFiles(order.status);
+
+    // Acceptance Section Logic
+    const acceptanceSection = document.getElementById('client-acceptance-section');
+    if (order.status === 'do_akceptacji' || order.status === 'gotowe') {
+        acceptanceSection.style.display = 'block';
+    } else {
+        acceptanceSection.style.display = 'none';
+    }
+
     modal.style.display = 'flex';
     if (window.lucide) {
         lucide.createIcons();
     }
+}
+
+function renderAdvancedTimeline(status) {
+    const timelineContainer = document.getElementById('modal-client-timeline');
+    const steps = [
+        { id: 'nowe', label: 'Złożone', icon: 'file-text' },
+        { id: 'w_realizacji_1', label: 'Materiały', icon: 'inbox' },
+        { id: 'w_realizacji_2', label: 'Projektowanie', icon: 'pen-tool' },
+        { id: 'poprawki', label: 'Poprawki', icon: 'refresh-cw' },
+        { id: 'do_akceptacji', label: 'Akceptacja', icon: 'check-square' },
+        { id: 'zakonczone', label: 'Ukończone', icon: 'award' }
+    ];
+
+    let currentStepIdx = 0;
+    if (status === 'w_realizacji') currentStepIdx = 2;
+    if (status === 'do_akceptacji' || status === 'gotowe') currentStepIdx = 4;
+    if (status === 'wyslane' || status === 'zakonczone') currentStepIdx = 5;
+
+    const percentage = (currentStepIdx / (steps.length - 1)) * 100;
+
+    let html = `
+        <div class="timeline-track">
+            <div class="timeline-line">
+                <div class="timeline-line-fill" style="width: ${percentage}%"></div>
+            </div>
+    `;
+
+    steps.forEach((step, idx) => {
+        let cls = '';
+        if (idx < currentStepIdx) cls = 'completed';
+        else if (idx === currentStepIdx) cls = 'active';
+
+        html += `
+            <div class="timeline-step ${cls}">
+                <div class="timeline-icon">
+                    <i data-lucide="${step.icon}"></i>
+                </div>
+                <div class="timeline-label">${step.label}</div>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+    timelineContainer.innerHTML = html;
+}
+
+function renderClientChat(orderId) {
+    const chatContainer = document.getElementById('modal-client-chat-messages');
+    // Mock messages
+    const messages = [
+        { sender: 'designer', text: 'Dzień dobry! Zaczynamy pracę nad projektem. Proszę o przesłanie logo w wektorach.', time: '10:00' },
+        { sender: 'client', text: 'Dzień dobry, pliki załączone w sekcji źródłowej.', time: '10:15' },
+        { sender: 'designer', text: 'Dziękuję. Pierwsze szkice będą gotowe do jutra.', time: '10:30' }
+    ];
+
+    let html = '';
+    messages.forEach(msg => {
+        html += `
+            <div class="chat-msg ${msg.sender}">
+                <div class="chat-bubble">${msg.text}</div>
+                <div class="chat-time">${msg.time}</div>
+            </div>
+        `;
+    });
+    chatContainer.innerHTML = html;
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Attach send button logic once (cleanup old listeners first if needed, simplistic approach here)
+    const sendBtn = document.getElementById('client-chat-send');
+    const inputField = document.getElementById('client-chat-input');
+
+    sendBtn.onclick = () => {
+        const text = inputField.value.trim();
+        if (!text) return;
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'chat-msg client';
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'chat-bubble';
+        bubbleDiv.textContent = text;
+
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'chat-time';
+        timeDiv.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        msgDiv.appendChild(bubbleDiv);
+        msgDiv.appendChild(timeDiv);
+
+        chatContainer.appendChild(msgDiv);
+
+        inputField.value = '';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    };
+}
+
+function renderClientFiles(status) {
+    const filesContainer = document.getElementById('modal-client-files');
+
+    const sourceFiles = [
+        { name: 'brief.pdf', icon: 'file-text' },
+        { name: 'logo.ai', icon: 'image' }
+    ];
+
+    const previewFiles = ['w_realizacji', 'do_akceptacji', 'gotowe', 'wyslane', 'zakonczone'].includes(status)
+        ? [{ name: 'szkic_v1.jpg', icon: 'image' }] : [];
+
+    const finalFiles = ['wyslane', 'zakonczone'].includes(status)
+        ? [{ name: 'final_render.zip', icon: 'archive' }] : [];
+
+    let html = '';
+
+    if (sourceFiles.length > 0) {
+        html += `<div class="client-file-category">
+            <div class="client-file-category-title">Pliki źródłowe</div>`;
+        sourceFiles.forEach(f => {
+            html += `
+                <div class="client-file-item">
+                    <div class="client-file-info">
+                        <i data-lucide="${f.icon}" class="client-file-icon"></i>
+                        <span>${f.name}</span>
+                    </div>
+                    <i data-lucide="download" style="width:16px;height:16px;color:var(--text-muted)"></i>
+                </div>`;
+        });
+        html += `</div>`;
+    }
+
+    if (previewFiles.length > 0) {
+        html += `<div class="client-file-category">
+            <div class="client-file-category-title">Podglądy</div>`;
+        previewFiles.forEach(f => {
+            html += `
+                <div class="client-file-item">
+                    <div class="client-file-info">
+                        <i data-lucide="${f.icon}" class="client-file-icon"></i>
+                        <span>${f.name}</span>
+                    </div>
+                    <i data-lucide="eye" style="width:16px;height:16px;color:var(--text-muted)"></i>
+                </div>`;
+        });
+        html += `</div>`;
+    }
+
+    if (finalFiles.length > 0) {
+        html += `<div class="client-file-category">
+            <div class="client-file-category-title">Pliki finalne</div>`;
+        finalFiles.forEach(f => {
+            html += `
+                <div class="client-file-item">
+                    <div class="client-file-info">
+                        <i data-lucide="${f.icon}" class="client-file-icon"></i>
+                        <span>${f.name}</span>
+                    </div>
+                    <i data-lucide="download" style="width:16px;height:16px;color:var(--text-muted)"></i>
+                </div>`;
+        });
+        html += `</div>`;
+    }
+
+    if (!html) {
+        html = '<p style="color:var(--text-muted); font-size:0.9rem;">Brak plików w tym projekcie.</p>';
+    }
+
+    filesContainer.innerHTML = html;
 }
 
 // Initialization for Client Panel
@@ -753,4 +942,24 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.style.display = 'none';
         }
     });
+
+    // Acceptance buttons logic
+    const acceptBtn = document.getElementById('btn-accept-project');
+    const rejectBtn = document.getElementById('btn-reject-project');
+
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', () => {
+            alert('Projekt zaakceptowany! Rozpoczynamy przygotowywanie plików finalnych.');
+            // Here you would send a request to backend to update order status to 'zakonczone' or similar
+            document.getElementById('client-order-modal').style.display = 'none';
+        });
+    }
+
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', () => {
+            alert('Wysłano prośbę o poprawki. Zespół zajmie się nimi wkrótce.');
+            // Here you would send a request to backend to update order status to 'poprawki' or similar
+            document.getElementById('client-order-modal').style.display = 'none';
+        });
+    }
 });

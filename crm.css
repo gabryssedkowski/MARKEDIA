@@ -372,3 +372,131 @@ body {
 .info-text span { font-size: 0.9rem; font-weight: 500; }
 .edit-field-btn, .add-field-btn { background: var(--card-light); border: none; width: 28px; height: 28px; border-radius: 50%; cursor:pointer; display:flex; align-items:center; justify-content:center;}
 .edit-field-btn i, .add-field-btn i { width: 14px; height: 14px; }
+
+/* Additional Styles for New CRM Features */
+
+/* List View */
+.history-grid.list-view {
+    grid-template-columns: 1fr;
+}
+
+.history-grid.list-view .history-card {
+    display: grid;
+    grid-template-columns: 1fr 2fr 3fr 1fr auto auto;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+}
+.history-grid.list-view .history-card .card-date,
+.history-grid.list-view .history-card .card-title,
+.history-grid.list-view .history-card .card-amount,
+.history-grid.list-view .history-card > div:nth-child(3) {
+    margin: 0;
+}
+.history-grid.list-view .history-card .card-action {
+    position: static;
+}
+.history-grid.list-view .history-card .card-avatars {
+    position: static;
+}
+.history-grid.list-view .history-card .card-actions-group {
+    position: static;
+    flex-direction: row;
+}
+
+/* Card Actions Group (Star, Bookmark) */
+.card-actions-group {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.card-icon-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+.card-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+}
+
+.card-icon-btn.active {
+    background: var(--primary, #007bff);
+    color: white;
+    border-color: var(--primary, #007bff);
+}
+
+.card-icon-btn.active.star-btn {
+    color: #ffc107;
+}
+
+.card-icon-btn i {
+    width: 14px;
+    height: 14px;
+}
+
+.history-card.black .card-icon-btn { background: rgba(255,255,255,0.2); color: white; }
+.history-card.yellow .card-icon-btn { border-color: rgba(0,0,0,0.1); color: black; background: rgba(255,255,255,0.5); }
+.history-card.bg-light .card-icon-btn { border-color: rgba(0,0,0,0.1); background: transparent; color: black; }
+
+/* Search Container in Header */
+.search-container {
+    display: flex;
+    align-items: center;
+    background: var(--bg-panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    height: 40px;
+    gap: 8px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.search-container .search-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+}
+
+.search-container input {
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    outline: none;
+    font-size: 0.9rem;
+    width: 150px;
+}
+
+.search-container button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: var(--text-muted);
+}
+
+.search-container button i {
+    width: 16px;
+    height: 16px;
+}
+
+.search-container button:hover {
+    color: var(--text-main);
+}

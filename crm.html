@@ -96,8 +96,16 @@
                 </div>
                 <div class="client-header-stats">
                     <div class="client-stat">
+                        <span class="client-stat-value" id="client-total-count">0</span>
+                        <span class="client-stat-label">Liczba zamówień</span>
+                    </div>
+                    <div class="client-stat">
                         <span class="client-stat-value" id="client-active-count">0</span>
-                        <span class="client-stat-label">Aktywne projekty</span>
+                        <span class="client-stat-label">Projekty w realizacji</span>
+                    </div>
+                    <div class="client-stat">
+                        <span class="client-stat-value" id="client-completed-count">0</span>
+                        <span class="client-stat-label">Projekty ukończone</span>
                     </div>
                     <div class="client-stat">
                         <span class="client-stat-value" id="client-total-value">0$</span>
@@ -388,9 +396,26 @@
             </div>
         </div>
 
+        <div class="client-modal-timeline" id="modal-client-timeline">
+            <!-- Timeline injected via JS -->
+        </div>
+
         <div class="client-modal-grid">
             <div class="client-modal-main">
-                <h3 class="client-section-title"><i data-lucide="align-left"></i> Opis zamówienia</h3>
+                <h3 class="client-section-title"><i data-lucide="message-circle"></i> Centrum wiadomości</h3>
+                <div class="client-chat-container">
+                    <div class="client-chat-messages" id="modal-client-chat-messages">
+                        <!-- Messages injected via JS -->
+                    </div>
+                    <div class="client-chat-input-area">
+                        <input type="text" id="client-chat-input" placeholder="Napisz wiadomość do grafika...">
+                        <button class="client-btn-primary" id="client-chat-send" style="padding: 12px; margin-left: 8px;">
+                            <i data-lucide="send" style="width:18px;height:18px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <h3 class="client-section-title" style="margin-top: 24px;"><i data-lucide="align-left"></i> Opis zamówienia</h3>
                 <div class="client-desc" id="modal-client-desc">
                     Szczegółowy opis konfiguracji i ustaleń.
                 </div>
@@ -402,6 +427,15 @@
             </div>
 
             <div class="client-modal-sidebar">
+                <div id="client-acceptance-section" style="display: none; margin-bottom: 24px;">
+                    <h3 class="client-section-title" style="color: var(--success);"><i data-lucide="check-circle"></i> Akceptacja projektu</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">Projekt czeka na Twoją decyzję. Sprawdź pliki podglądowe.</p>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <button id="btn-accept-project" class="client-btn-primary" style="background: var(--success); border-color: var(--success);">Akceptuję projekt</button>
+                        <button id="btn-reject-project" class="client-btn-secondary" style="border-color: var(--warning); color: var(--warning);">Proszę o poprawki</button>
+                    </div>
+                </div>
+
                 <h3 class="client-section-title"><i data-lucide="info"></i> Szczegóły</h3>
                 <div class="client-info-list" style="margin-bottom: 24px;">
                     <div class="client-info-row">
@@ -418,15 +452,9 @@
                     </div>
                 </div>
 
-                <h3 class="client-section-title"><i data-lucide="download"></i> Pliki</h3>
+                <h3 class="client-section-title"><i data-lucide="folder"></i> Pliki projektu</h3>
                 <div id="modal-client-files">
-                    <div class="client-file-item">
-                        <div class="client-file-info">
-                            <i data-lucide="file-text" class="client-file-icon"></i>
-                            <span>Podsumowanie.pdf</span>
-                        </div>
-                        <i data-lucide="download" style="width:16px;height:16px;color:var(--text-muted)"></i>
-                    </div>
+                    <!-- Files categorized injected via JS -->
                 </div>
             </div>
         </div>

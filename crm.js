@@ -202,6 +202,13 @@ function initSidebar() {
     const historyTitle = document.querySelector('.interaction-history .panel-header h2');
 
     function toggleFullView(isActive, type) {
+        const clientOrdersView = document.getElementById('client-orders-view');
+        if (clientOrdersView) {
+            clientOrdersView.style.display = 'none';
+        }
+        dashboardGrid.style.display = 'grid'; // ensure normal grid is visible
+        document.querySelector('.sub-header').style.display = 'flex'; // ensure subheader is visible
+
         if (isActive) {
             dashboardGrid.classList.add('full-view');
             statsRow.style.display = 'none';
@@ -218,6 +225,21 @@ function initSidebar() {
             pageTitle.innerHTML = 'Panel<br>Zarządzania';
             historyTitle.innerText = 'Interaction History / Spis zamówień';
         }
+    }
+
+    const sidebarLogoBtn = document.getElementById('sidebar-logo-btn');
+    if (sidebarLogoBtn) {
+        sidebarLogoBtn.addEventListener('click', () => {
+            document.querySelectorAll('.sidebar-nav .nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelector('.sidebar-nav .nav-item[data-action="view-grid"]')?.classList.add('active');
+
+            currentFilter = 'all';
+            layoutMode = 'grid';
+            grid.classList.remove('list-view');
+
+            toggleFullView(false);
+            renderOrders();
+        });
     }
 
     navItems.forEach(item => {
@@ -279,12 +301,31 @@ function initSidebar() {
                 case 'view-grid':
                     layoutMode = 'grid';
                     grid.classList.remove('list-view');
+
+                    const clientOrdersViewGrid = document.getElementById('client-orders-view');
+                    if (clientOrdersViewGrid) {
+                        clientOrdersViewGrid.style.display = 'none';
+                    }
+                    document.querySelector('.dashboard-grid').style.display = 'grid';
+                    document.querySelector('.sub-header').style.display = 'flex';
+
                     renderOrders();
                     break;
                 case 'view-list':
-                    layoutMode = 'list';
-                    grid.classList.add('list-view');
-                    renderOrders();
+                    const clientOrdersView = document.getElementById('client-orders-view');
+                    const dashboardGridEl = document.querySelector('.dashboard-grid');
+                    const subHeaderEl = document.querySelector('.sub-header');
+
+                    if (clientOrdersView) {
+                        dashboardGridEl.style.display = 'none';
+                        subHeaderEl.style.display = 'none';
+                        clientOrdersView.style.display = 'block';
+
+                        // Initial render of client panel
+                        if (typeof renderClientOrders === 'function') {
+                            renderClientOrders();
+                        }
+                    }
                     break;
                 case 'settings':
                     document.getElementById('settings-modal').style.display = 'flex';
@@ -476,3 +517,240 @@ function updateFunnelStats() {
         if(window.lucide) window.lucide.createIcons();
     }
 }
+// --- Client Panel Logic ---
+let currentClientFilter = 'all';
+let currentClientSearch = '';
+
+function getClientStatusInfo(status) {
+    const map = {
+        'nowe': { text: 'Oczekuje', cls: 'status-oczekuje', icon: 'clock' },
+        'w_realizacji': { text: 'W realizacji', cls: 'status-realizacja', icon: 'tool' },
+        'do_akceptacji': { text: 'Do akceptacji', cls: 'status-akceptacja', icon: 'check-circle' },
+        'gotowe': { text: 'Do akceptacji', cls: 'status-akceptacja', icon: 'check-circle' },
+        'wyslane': { text: 'Wysłane', cls: 'status-wyslane', icon: 'truck' },
+        'zakonczone': { text: 'Zakończone', cls: 'status-zakonczone', icon: 'flag' },
+        'anulowane': { text: 'Anulowane', cls: 'status-zakonczone', icon: 'x-circle' } // Map canceled to completed for simplicity or create new
+    };
+    return map[status] || map['nowe'];
+}
+
+function getProgressSteps(status) {
+    const statuses = ['nowe', 'w_realizacji', 'do_akceptacji', 'wyslane', 'zakonczone'];
+    let idx = statuses.indexOf(status);
+    if (idx === -1) idx = 0;
+
+    // Gotowe mapped to do akceptacji step
+    if (status === 'gotowe') idx = 2;
+
+    const percentage = Math.min(100, Math.max(0, (idx / (statuses.length - 1)) * 100));
+
+    const stepsHtml = `
+        <div class="client-progress-container">
+            <div class="client-progress-track">
+                <div class="client-progress-fill" style="width: ${percentage}%; background-color: var(--purple);"></div>
+            </div>
+            <div class="client-progress-steps">
+                <span class="client-step-label ${idx >= 0 ? 'active' : ''}">Złożone</span>
+                <span class="client-step-label ${idx >= 1 ? 'active' : ''}">Projektowanie</span>
+                <span class="client-step-label ${idx >= 2 ? 'active' : ''}">Poprawki</span>
+                <span class="client-step-label ${idx >= 3 ? 'active' : ''}">Akceptacja</span>
+                <span class="client-step-label ${idx >= 4 ? 'active' : ''}">Gotowe</span>
+            </div>
+        </div>
+    `;
+    return stepsHtml;
+}
+
+function renderClientOrders() {
+    const grid = document.getElementById('client-orders-grid');
+    const emptyState = document.getElementById('client-empty-state');
+    const activeCountEl = document.getElementById('client-active-count');
+    const totalValEl = document.getElementById('client-total-value');
+
+    if (!grid || !emptyState) return;
+
+    let filtered = ordersData.filter(order => {
+        let matchesSearch = true;
+        if (currentClientSearch) {
+            const textToSearch = ((order.customer?.contact || order.contact || '') + ' ' + (order.title || '') + ' ' + (order.items?.map(i => i.title).join(' ') || '')).toLowerCase();
+            matchesSearch = textToSearch.includes(currentClientSearch.toLowerCase());
+        }
+
+        let matchesFilter = true;
+        if (currentClientFilter === 'aktywne') {
+            matchesFilter = ['w_realizacji', 'gotowe'].includes(order.status);
+        } else if (currentClientFilter === 'oczekujace') {
+            matchesFilter = order.status === 'nowe';
+        } else if (currentClientFilter === 'zakonczone') {
+            matchesFilter = ['wyslane', 'zakonczone', 'anulowane'].includes(order.status);
+        }
+
+        return matchesSearch && matchesFilter;
+    });
+
+    // Update Stats
+    const activeCount = ordersData.filter(o => ['w_realizacji', 'gotowe'].includes(o.status)).length;
+    activeCountEl.innerText = activeCount;
+
+    const totalValue = ordersData.reduce((sum, order) => {
+        return sum + (order.items || []).reduce((itemSum, item) => itemSum + (item.price || 0) * (item.quantity || 1), 0);
+    }, 0);
+    totalValEl.innerText = totalValue + '$';
+
+    if (filtered.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'flex';
+        return;
+    }
+
+    grid.style.display = 'grid';
+    emptyState.style.display = 'none';
+    grid.innerHTML = '';
+
+    filtered.forEach(order => {
+        const statusInfo = getClientStatusInfo(order.status);
+        const orderTitle = order.title || (order.items && order.items.length > 0 ? order.items[0].title : 'Zamówienie niestandardowe');
+        const price = (order.items || []).reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+
+        const card = document.createElement('div');
+        card.className = 'client-card';
+        card.onclick = () => openClientModal(order);
+
+        const thumbImg = (order.items && order.items[0] && order.items[0].image) ?
+            `<img src="${order.items[0].image}" alt="thumb">` :
+            `<i data-lucide="package" style="width:24px;height:24px;"></i>`;
+
+        card.innerHTML = `
+            <div class="client-card-header">
+                <div class="client-card-thumb">
+                    ${thumbImg}
+                </div>
+                <div class="client-card-info">
+                    <h3 class="client-card-title">${orderTitle}</h3>
+                    <p class="client-card-id">#${order.id}</p>
+                </div>
+                <div class="client-status-badge ${statusInfo.cls}">
+                    <i data-lucide="${statusInfo.icon}"></i>
+                    ${statusInfo.text}
+                </div>
+            </div>
+            <div class="client-card-body">
+                <div class="client-card-details">
+                    <div class="client-detail-item">
+                        <span class="client-detail-label">Data zamówienia</span>
+                        <span class="client-detail-value">${new Date(order.date).toLocaleDateString('pl-PL')}</span>
+                    </div>
+                    <div class="client-detail-item" style="text-align: right;">
+                        <span class="client-detail-label">Wartość</span>
+                        <span class="client-detail-value">${price}$</span>
+                    </div>
+                </div>
+                ${getProgressSteps(order.status)}
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+function openClientModal(order) {
+    const modal = document.getElementById('client-order-modal');
+    if (!modal) return;
+
+    const statusInfo = getClientStatusInfo(order.status);
+    const orderTitle = order.title || (order.items && order.items.length > 0 ? order.items[0].title : 'Zamówienie niestandardowe');
+    const price = (order.items || []).reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+
+    document.getElementById('modal-client-title').innerText = orderTitle;
+    document.getElementById('modal-client-id').innerText = `Zamówienie #${order.id}`;
+    document.getElementById('modal-client-date').innerText = new Date(order.date).toLocaleDateString('pl-PL');
+    document.getElementById('modal-client-price').innerText = price + '$';
+
+    const thumbContainer = document.getElementById('modal-client-thumb');
+    thumbContainer.innerHTML = (order.items && order.items[0] && order.items[0].image) ?
+            `<img src="${order.items[0].image}" alt="thumb">` :
+            `<i data-lucide="package" style="width:32px;height:32px;"></i>`;
+
+    const badgeContainer = document.getElementById('modal-client-status-badge');
+    badgeContainer.innerHTML = `
+        <div class="client-status-badge ${statusInfo.cls}" style="font-size: 0.9rem; padding: 6px 16px;">
+            <i data-lucide="${statusInfo.icon}" style="width:16px;height:16px;"></i>
+            ${statusInfo.text}
+        </div>
+    `;
+
+    // Options
+    const optionsContainer = document.getElementById('modal-client-options');
+    let optionsHtml = '';
+    if (order.items && order.items.length > 0) {
+        order.items.forEach(item => {
+            optionsHtml += `<div class="client-info-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                <span class="client-info-val">${item.title} (x${item.quantity})</span>`;
+
+            if (item.options) {
+                Object.entries(item.options).forEach(([key, val]) => {
+                    optionsHtml += `<span class="client-info-label" style="font-size: 0.8rem;">- ${key}: ${val}</span>`;
+                });
+            }
+            optionsHtml += `</div>`;
+        });
+    } else {
+         optionsHtml = '<p style="color:var(--text-muted); font-size: 0.9rem; margin:0;">Brak szczegółowych opcji.</p>';
+    }
+    optionsContainer.innerHTML = optionsHtml;
+
+    // Contact info inside description for now if there isn't a dedicated description
+    const descContainer = document.getElementById('modal-client-desc');
+    descContainer.innerHTML = `
+        <p><strong>Kontakt:</strong> ${order.contact || 'Brak danych'}</p>
+        <p><strong>Uwagi:</strong> Projekty w trakcie analizy zapotrzebowania klienta. Wszelkie uwagi prosimy przesyłać na adres mailowy.</p>
+    `;
+
+    modal.style.display = 'flex';
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+// Initialization for Client Panel
+document.addEventListener('DOMContentLoaded', () => {
+    // Client Search
+    const clientSearch = document.getElementById('client-search-input');
+    if (clientSearch) {
+        clientSearch.addEventListener('input', (e) => {
+            currentClientSearch = e.target.value;
+            renderClientOrders();
+        });
+    }
+
+    // Client Filters
+    const filterBtns = document.querySelectorAll('.client-filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            const target = e.currentTarget;
+            target.classList.add('active');
+            currentClientFilter = target.getAttribute('data-client-filter');
+            renderClientOrders();
+        });
+    });
+
+    // Client Modal Close
+    const closeModalBtn = document.getElementById('client-close-modal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            document.getElementById('client-order-modal').style.display = 'none';
+        });
+    }
+
+    // Close modal on outside click
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('client-order-modal');
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});

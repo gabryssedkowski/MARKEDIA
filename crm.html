@@ -12,7 +12,7 @@
 <div class="crm-container">
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="sidebar-logo">
+        <div class="sidebar-logo" style="cursor: pointer;" title="Powrót do pulpitu" id="sidebar-logo-btn">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
                 <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -84,6 +84,50 @@
                         <div class="stat-desc">Zlecenia<br>W toku</div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Client Orders View (Hidden by default) -->
+        <div id="client-orders-view" class="client-orders-view" style="display: none;">
+            <div class="client-orders-header">
+                <div class="client-header-titles">
+                    <h1>Moje zamówienia</h1>
+                    <p class="client-header-subtitle">Śledź postępy i zarządzaj swoimi projektami</p>
+                </div>
+                <div class="client-header-stats">
+                    <div class="client-stat">
+                        <span class="client-stat-value" id="client-active-count">0</span>
+                        <span class="client-stat-label">Aktywne projekty</span>
+                    </div>
+                    <div class="client-stat">
+                        <span class="client-stat-value" id="client-total-value">0$</span>
+                        <span class="client-stat-label">Łączna wartość</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="client-orders-filters">
+                <div class="client-filter-buttons">
+                    <button class="client-filter-btn active" data-client-filter="all">Wszystkie</button>
+                    <button class="client-filter-btn" data-client-filter="aktywne">Aktywne</button>
+                    <button class="client-filter-btn" data-client-filter="oczekujace">Oczekujące</button>
+                    <button class="client-filter-btn" data-client-filter="zakonczone">Zakończone</button>
+                </div>
+                <div class="client-search">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="client-search-input" placeholder="Szukaj zamówienia...">
+                </div>
+            </div>
+
+            <div id="client-orders-grid" class="client-orders-cards">
+                <!-- Cards injected via JS -->
+            </div>
+
+            <div id="client-empty-state" class="client-empty-state" style="display: none;">
+                <div class="empty-icon"><i data-lucide="package-open" style="width: 64px; height: 64px;"></i></div>
+                <h3>Nie masz jeszcze żadnych zamówień</h3>
+                <p>Rozpocznij nowy projekt i skonfiguruj swój wymarzony produkt.</p>
+                <a href="zamow.html" class="client-btn-primary">Rozpocznij nowe zamówienie</a>
             </div>
         </div>
 
@@ -318,6 +362,72 @@
                     <span style="font-size: 0.8rem; color: var(--text-muted);">Przywróć domyślne dane profilu.</span>
                 </div>
                 <button id="reset-profile-btn" style="background: transparent; color: var(--text-main); border: 1px solid var(--panel-border); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Zresetuj</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Client Order Details Modal -->
+<div id="client-order-modal" class="modal" style="display:none; align-items:center; justify-content:center;">
+    <div class="client-modal-content">
+        <button class="client-modal-close" id="client-close-modal" style="position:absolute; top:20px; right:20px; background:none; border:none; color:white; cursor:pointer;"><i data-lucide="x" style="width:24px;height:24px;"></i></button>
+
+        <div class="client-modal-header">
+            <div style="display:flex; gap: 20px; align-items: center;">
+                <div class="client-card-thumb" style="width: 80px; height: 80px;" id="modal-client-thumb">
+                    <i data-lucide="image" style="width:32px;height:32px;"></i>
+                </div>
+                <div>
+                    <h2 style="margin: 0 0 8px 0; font-size: 1.5rem;" id="modal-client-title">Nazwa Projektu</h2>
+                    <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;" id="modal-client-id">Zamówienie #12345</p>
+                </div>
+            </div>
+            <div id="modal-client-status-badge">
+                <!-- Status Badge -->
+            </div>
+        </div>
+
+        <div class="client-modal-grid">
+            <div class="client-modal-main">
+                <h3 class="client-section-title"><i data-lucide="align-left"></i> Opis zamówienia</h3>
+                <div class="client-desc" id="modal-client-desc">
+                    Szczegółowy opis konfiguracji i ustaleń.
+                </div>
+
+                <h3 class="client-section-title"><i data-lucide="settings"></i> Wybrane opcje</h3>
+                <div class="client-info-list" id="modal-client-options">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+
+            <div class="client-modal-sidebar">
+                <h3 class="client-section-title"><i data-lucide="info"></i> Szczegóły</h3>
+                <div class="client-info-list" style="margin-bottom: 24px;">
+                    <div class="client-info-row">
+                        <span class="client-info-label">Data zlecenia</span>
+                        <span class="client-info-val" id="modal-client-date">10.10.2023</span>
+                    </div>
+                    <div class="client-info-row">
+                        <span class="client-info-label">Cena</span>
+                        <span class="client-info-val" id="modal-client-price">0$</span>
+                    </div>
+                    <div class="client-info-row">
+                        <span class="client-info-label">Termin (est.)</span>
+                        <span class="client-info-val">~14 dni</span>
+                    </div>
+                </div>
+
+                <h3 class="client-section-title"><i data-lucide="download"></i> Pliki</h3>
+                <div id="modal-client-files">
+                    <div class="client-file-item">
+                        <div class="client-file-info">
+                            <i data-lucide="file-text" class="client-file-icon"></i>
+                            <span>Podsumowanie.pdf</span>
+                        </div>
+                        <i data-lucide="download" style="width:16px;height:16px;color:var(--text-muted)"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

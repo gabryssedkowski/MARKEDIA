@@ -51,8 +51,11 @@ body {
 
 
 .crm-container {
-    width: 1440px;
-    height: 900px;
+    width: 100%;
+    max-width: 1440px;
+    height: 90vh;
+    max-height: 900px;
+    min-height: 600px;
     background: transparent;
     display: flex;
     position: relative;
@@ -499,4 +502,172 @@ body {
 
 .search-container button:hover {
     color: var(--text-main);
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1200px) {
+    .crm-container {
+        width: 100%;
+        height: auto;
+        min-height: 90vh;
+        overflow-y: auto;
+    }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    .detailed-info-panel, .stage-funnel {
+        grid-column: 1;
+        grid-row: auto;
+    }
+    .tasks-schedule {
+        grid-column: 1;
+        grid-row: auto;
+    }
+    .history-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    body {
+        padding: 10px;
+        align-items: flex-start;
+    }
+    .crm-container {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        border-radius: 20px;
+        margin: 0 0 20px 0;
+        padding: 10px 20px;
+        align-items: center;
+        justify-content: flex-start;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .sidebar-logo {
+        margin-bottom: 0;
+        margin-right: 20px;
+    }
+    .sidebar-nav {
+        flex-direction: row;
+        gap: 10px;
+        flex-grow: 1;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    .sidebar-nav::-webkit-scrollbar {
+        height: 4px;
+    }
+    .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.3);
+        border-radius: 2px;
+    }
+    .main-content {
+        padding: 0;
+        overflow-y: visible;
+    }
+    .top-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    .header-nav {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .stats-row {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    .stat-item {
+        width: calc(50% - 10px);
+    }
+    .sub-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .sub-header .back-btn {
+        position: static;
+    }
+    .page-title {
+        margin-right: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .history-grid {
+        grid-template-columns: 1fr;
+    }
+    .history-grid.list-view .history-card {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .stat-item {
+        width: 100%;
+    }
+    .calendar-grid {
+        grid-template-columns: repeat(7, 1fr);
+    }
+    .cal-day {
+        font-size: 0.7rem;
+        padding: 4px;
+        height: 50px;
+    }
+    .funnel-stages .stage {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100% !important; /* Overriding inline widths for mobile to look uniform */
+        gap: 10px;
+    }
+    .panel {
+        padding: 16px;
+    }
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .search-container {
+        flex: 1;
+        margin-right: 10px;
+    }
+    .search-container input {
+        width: 100%;
+    }
+}
+/* Additional mobile fixes */
+@media (max-width: 600px) {
+    .funnel-stages .stage {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+/* Fixes for modals and touch scrolling on mobile */
+@media (max-width: 600px) {
+    .modal-content {
+        width: 90%;
+        padding: 1.5rem;
+    }
+
+    .sidebar-nav {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .main-content {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+/* Make settings modal rows flex-column on mobile to prevent overflow */
+@media (max-width: 600px) {
+    #settings-modal .modal-content > div > div {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
 }

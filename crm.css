@@ -246,6 +246,26 @@ body {
     overflow-y: auto; max-height: 300px; /* Add scroll if too many orders */
 }
 
+/* Full View Mode for Dashboard */
+.dashboard-grid.full-view {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-grid.full-view .detailed-info-panel,
+.dashboard-grid.full-view .tasks-schedule,
+.dashboard-grid.full-view .stage-funnel {
+    display: none;
+}
+
+.dashboard-grid.full-view .interaction-history {
+    flex: 1;
+}
+
+.dashboard-grid.full-view .history-grid {
+    max-height: none;
+}
+
 .history-card {
     border-radius: var(--radius-md); padding: 16px; color: white;
     display: flex; flex-direction: column; position: relative;

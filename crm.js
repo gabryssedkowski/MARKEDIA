@@ -196,6 +196,30 @@ function initSidebar() {
     const closeSearchBtn = document.getElementById('close-search-btn');
     const grid = document.getElementById('orders-grid');
 
+    const dashboardGrid = document.querySelector('.dashboard-grid');
+    const pageTitle = document.querySelector('.page-title');
+    const statsRow = document.querySelector('.stats-row');
+    const historyTitle = document.querySelector('.interaction-history .panel-header h2');
+
+    function toggleFullView(isActive, type) {
+        if (isActive) {
+            dashboardGrid.classList.add('full-view');
+            statsRow.style.display = 'none';
+            if (type === 'starred') {
+                pageTitle.innerHTML = 'Ulubione<br>Zamówienia';
+                historyTitle.innerText = 'Ulubione zamówienia';
+            } else if (type === 'bookmarked') {
+                pageTitle.innerHTML = 'Zapisane<br>Zamówienia';
+                historyTitle.innerText = 'Zapisane zamówienia';
+            }
+        } else {
+            dashboardGrid.classList.remove('full-view');
+            statsRow.style.display = 'flex';
+            pageTitle.innerHTML = 'Panel<br>Zarządzania';
+            historyTitle.innerText = 'Interaction History / Spis zamówień';
+        }
+    }
+
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
@@ -213,10 +237,12 @@ function initSidebar() {
                     if(item.classList.contains('active')) {
                         item.classList.remove('active');
                         currentFilter = 'all';
+                        toggleFullView(false);
                     } else {
                         document.querySelectorAll('.sidebar-nav .nav-item[data-action="filter-starred"], .sidebar-nav .nav-item[data-action="filter-bookmarked"]').forEach(n => n.classList.remove('active'));
                         item.classList.add('active');
                         currentFilter = action === 'filter-starred' ? 'starred' : 'bookmarked';
+                        toggleFullView(true, currentFilter);
                     }
                     renderOrders();
                 }

@@ -395,6 +395,36 @@ async function requestJson(url, options = {}) {
     return catalog;
   }
 
+  const catalogPutMatch = url.match(/^\/api\/banner-catalog\/([^/]+)$/);
+  if (catalogPutMatch && method === "PUT") {
+    const payload = JSON.parse(options.body);
+    const title = (payload.title || "").trim();
+    const category = (payload.category || "").trim();
+    if (!title || !category) throw new Error("Podaj tytuł i kategorię banera.");
+
+    const catalog = getLocalData("markedia-catalog", defaultCatalog);
+    const index = catalog.banners.findIndex(b => b.id === catalogPutMatch[1]);
+    if (index === -1) throw new Error("Nie znaleziono banera.");
+
+    catalog.banners[index] = {
+      ...catalog.banners[index],
+      title,
+      category,
+      format: (payload.format || "").trim() || "200 x 100 cm",
+      priceFrom: (payload.priceFrom || "").trim() || "indywidualna wycena",
+      description: (payload.description || "").trim(),
+      ...(payload.imageDataUrl ? { image: payload.imageDataUrl } : {}),
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (!catalog.categories.some(c => c.toLowerCase() === category.toLowerCase())) {
+      catalog.categories.push(category);
+      catalog.categories.sort((a, b) => a.localeCompare(b, "pl"));
+    }
+    setLocalData("markedia-catalog", catalog);
+    return { banner: catalog.banners[index], catalog };
+  }
+
 
   if (url === "/api/orders" && method === "GET") {
     const orders = getLocalData("markedia-orders", []);
@@ -499,25 +529,7 @@ async function requestJson(url, options = {}) {
   }
 
 
-  const catalogPutMatch = url.match(/^\/api\/banner-catalog\/([^\/]+)$/);
-  if (catalogPutMatch && method === "PUT") {
-    const payload = JSON.parse(options.body);
-    let catalog = getLocalData("markedia-catalog", defaultCatalog);
-    const bannerIndex = catalog.banners.findIndex(b => b.id === catalogPutMatch[1]);
 
-    if (bannerIndex === -1) throw new Error("Nie znaleziono produktu w katalogu.");
-
-    // Obsługa dodania nowej kategorii w trakcie edycji
-    const category = (payload.category || catalog.banners[bannerIndex].category || "").trim();
-    if (category && !catalog.categories.some(c => c.toLowerCase() === category.toLowerCase())) {
-      catalog.categories.push(category);
-      catalog.categories.sort((a, b) => a.localeCompare(b, "pl"));
-    }
-
-    catalog.banners[bannerIndex] = { ...catalog.banners[bannerIndex], ...payload };
-    setLocalData("markedia-catalog", catalog);
-    return { banner: catalog.banners[bannerIndex], catalog };
-  }
 
   throw new Error("Nie znaleziono endpointu.");
 }
@@ -638,7 +650,10 @@ function initBannerAdmin() {
                                 <p>${escapeHTML(banner.format || "200 x 100 cm")} • ${escapeHTML(banner.priceFrom || "indywidualna wycena")}</p>
                                 <p>${escapeHTML(banner.description || "")}</p>
                               </div>
-                              <button type="button" data-delete-banner="${escapeHTML(banner.id)}">Usuń</button>
+                              <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                <button type="button" data-edit-banner="${escapeHTML(banner.id)}" class="btn btn--outline btn--small" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Edytuj</button>
+                                <button type="button" data-delete-banner="${escapeHTML(banner.id)}" class="btn btn--outline btn--small" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; color: var(--error); border-color: var(--error);">Usuń</button>
+                              </div>
                             </article>
                           `
                         )
@@ -650,6 +665,35 @@ function initBannerAdmin() {
           `;
         })
         .join("") || '<p class="catalog-empty is-visible">Najpierw dodaj kategorię.</p>';
+
+    bannerList.querySelectorAll("[data-edit-banner]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const bannerId = button.dataset.editBanner;
+        const banner = catalog.banners.find(b => b.id === bannerId);
+        if (!banner) return;
+        
+        form.elements.id.value = banner.id;
+        form.elements.title.value = banner.title;
+        form.elements.category.value = banner.category;
+        form.elements.format.value = banner.format || "200 x 100 cm";
+        form.elements.priceFrom.value = banner.priceFrom || "indywidualna wycena";
+        form.elements.description.value = banner.description || "";
+        
+        const preview = document.querySelector("[data-admin-image-preview]");
+        if (preview && banner.image) {
+           preview.innerHTML = `<img src="${banner.image}" alt="Podgląd" />`;
+        }
+        
+        const cancelBtn = document.querySelector("[data-admin-cancel-edit]");
+        if (cancelBtn) cancelBtn.style.display = "block";
+        const submitText = document.querySelector("[data-submit-text]");
+        if (submitText) submitText.textContent = "Zaktualizuj produkt";
+        const adminTitle = document.getElementById("admin-title");
+        if (adminTitle) adminTitle.textContent = "Edytuj produkt";
+        
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
 
     bannerList.querySelectorAll("[data-delete-banner]").forEach((button) => {
       button.addEventListener("click", async () => {
@@ -702,7 +746,24 @@ function initBannerAdmin() {
   };
 
   const renderOrders = () => {
-    orderList.innerHTML = orders.map(order => {
+    const searchInput = document.getElementById("admin-order-search");
+    const filterSelect = document.getElementById("admin-order-filter");
+    
+    let filteredOrders = orders;
+    
+    if (filterSelect && filterSelect.value !== "all") {
+        filteredOrders = filteredOrders.filter(o => o.status === filterSelect.value);
+    }
+    
+    if (searchInput && searchInput.value.trim() !== "") {
+        const term = searchInput.value.trim().toLowerCase();
+        filteredOrders = filteredOrders.filter(o => {
+            const customerStr = ((o.customer?.contact || '') + (o.customer?.email || '') + (o.customer?.phone || '') + (o.contact || '') + (o.phone || '') + (o.email || '')).toLowerCase();
+            return o.id.toLowerCase().includes(term) || customerStr.includes(term);
+        });
+    }
+
+    orderList.innerHTML = filteredOrders.map(order => {
         let itemsHtml = '';
         let total = 0;
         let customerInfo = '';
@@ -798,8 +859,72 @@ function initBannerAdmin() {
             }
         });
     });
+    document.querySelectorAll('[data-admin-delete-order]').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const orderId = e.currentTarget.dataset.adminDeleteOrder;
+            if (!window.confirm('Czy na pewno chcesz usunąć to zamówienie?')) return;
+            try {
+                setStatus('Usuwanie...', 'loading');
+                await requestJson('/api/banner-orders/' + orderId, { method: 'DELETE' });
+                await loadOrders();
+            } catch(err) {
+                setStatus(err.message, 'error');
+            }
+        });
+    });
   };
 
+
+  const exportOrdersToCSV = () => {
+      if (orders.length === 0) {
+          alert("Brak zamówień do eksportu.");
+          return;
+      }
+      
+      const headers = ["ID Zamówienia", "Data", "Status", "Klient", "Email", "Telefon", "Produkty", "Suma (zł)", "Uwagi"];
+      
+      const rows = orders.map(o => {
+          const date = new Date(o.createdAt).toLocaleString("pl-PL").replace(/,/g, '');
+          const customer = o.customer?.contact || o.contact || "";
+          const email = o.customer?.email || o.email || "";
+          const phone = o.customer?.phone || o.phone || "";
+          const notes = (o.notes || o.customer?.notes || "").replace(/\n/g, ' ');
+          
+          let products = "";
+          let total = 0;
+          if (o.items && o.items.length > 0) {
+              products = o.items.map(i => i.title).join(' | ');
+              total = o.total;
+          } else {
+              products = o.title || o.template || "Baner";
+              total = "Wycena ind.";
+          }
+          
+          // Escape quotes and commas
+          const escapeCsv = (str) => `"${String(str).replace(/"/g, '""')}"`;
+          
+          return [
+              escapeCsv(o.id),
+              escapeCsv(date),
+              escapeCsv(o.status),
+              escapeCsv(customer),
+              escapeCsv(email),
+              escapeCsv(phone),
+              escapeCsv(products),
+              escapeCsv(total),
+              escapeCsv(notes)
+          ].join(",");
+      });
+      
+      const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `zamowienia-markedia-${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  };
 
   const loadOrders = async () => {
     if (!orderList) return;
@@ -843,12 +968,32 @@ function initBannerAdmin() {
     }
   });
 
+  const cancelEditBtn = document.querySelector("[data-admin-cancel-edit]");
+  if (cancelEditBtn) {
+      cancelEditBtn.addEventListener("click", () => {
+          form.reset();
+          form.elements.id.value = "";
+          form.elements.format.value = "200 x 100 cm";
+          form.elements.priceFrom.value = "indywidualna wycena";
+          if (imagePreview) {
+            imagePreview.innerHTML = '<i data-lucide="image-plus" aria-hidden="true"></i><span>Podgląd pliku</span>';
+          }
+          cancelEditBtn.style.display = "none";
+          const submitText = document.querySelector("[data-submit-text]");
+          if (submitText) submitText.textContent = "Zapisz produkt";
+          const adminTitle = document.getElementById("admin-title");
+          if (adminTitle) adminTitle.textContent = "Dodaj nowy produkt";
+      });
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const formData = new FormData(form);
     const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;
-    setStatus("Dodaję baner...");
+    const bannerId = formData.get("id");
+    const isEdit = !!bannerId;
+    setStatus(isEdit ? "Aktualizuję baner..." : "Dodaję baner...");
 
     try {
       const imageDataUrl = await fileToDataUrl(imageInput?.files?.[0]);
@@ -858,22 +1003,32 @@ function initBannerAdmin() {
         format: formData.get("format"),
         priceFrom: formData.get("priceFrom"),
         description: formData.get("description"),
-        imageDataUrl,
+        ...(imageDataUrl ? { imageDataUrl } : {})
       };
-      const result = await requestJson("/api/banner-catalog", {
-        method: "POST",
+      
+      const endpoint = isEdit ? `/api/banner-catalog/${bannerId}` : "/api/banner-catalog";
+      const method = isEdit ? "PUT" : "POST";
+
+      const result = await requestJson(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      catalog = result.catalog;
+      catalog = result.catalog || result.catalog || catalog; // handle mock differences
       form.reset();
+      form.elements.id.value = "";
       form.elements.format.value = "200 x 100 cm";
       form.elements.priceFrom.value = "indywidualna wycena";
       if (imagePreview) {
         imagePreview.innerHTML = '<i data-lucide="image-plus" aria-hidden="true"></i><span>Podgląd pliku</span>';
       }
+      if (cancelEditBtn) cancelEditBtn.style.display = "none";
+      const submitText = document.querySelector("[data-submit-text]");
+      if (submitText) submitText.textContent = "Zapisz produkt";
+      const adminTitle = document.getElementById("admin-title");
+      if (adminTitle) adminTitle.textContent = "Dodaj nowy produkt";
       renderAdmin(payload.category);
-      setStatus("Baner dodany do katalogu.", "ok");
+      setStatus(isEdit ? "Baner zaktualizowany." : "Baner dodany do katalogu.", "ok");
     } catch (error) {
       setStatus(error.message, "error");
     } finally {
@@ -1389,40 +1544,97 @@ function initProductConfigurator() {
   const storeProductsGrid = document.getElementById("store-products-grid");
   const configProductTitle = document.getElementById("configurator-product-title");
 
-  const storeProducts = {
+  let storeProducts = {
     logo: [
-      { id: "logo-basic", title: "Projekt Logo", desc: "Profesjonalne logo dla Twojej marki. Odśwież swój wizerunek.", price: 800, badge: "Popularne", img: "assets/placeholder-logo.jpg", configCat: "logo" }
+      { id: "logo-basic", title: "Projekt Logo", desc: "Profesjonalne logo dla Twojej marki. Odśwież swój wizerunek.", price: 800, badge: "Popularne", img: "assets/BRANDING.png", configCat: "logo" }
     ],
     baner: [
-      { id: "baner-budowlany", title: "Baner Budowlany", desc: "Wytrzymały baner dla firm remontowych i budowlanych.", price: 150, badge: "Popularne", img: "assets/placeholder-baner.jpg", configCat: "baner" },
-      { id: "baner-mechanik", title: "Baner Mechanik", desc: "Zwiększ widoczność swojego warsztatu samochodowego.", price: 150, badge: "", img: "assets/placeholder-baner.jpg", configCat: "baner" },
-      { id: "baner-beauty", title: "Baner Beauty", desc: "Elegancki baner dla salonów kosmetycznych i fryzjerskich.", price: 150, badge: "Nowość", img: "assets/placeholder-baner.jpg", configCat: "baner" },
-      { id: "baner-gastronomia", title: "Baner Gastronomia", desc: "Apetyczny projekt banera dla restauracji i food trucków.", price: 150, badge: "", img: "assets/placeholder-baner.jpg", configCat: "baner" },
-      { id: "baner-transport", title: "Baner Transport", desc: "Czytelny baner dla firm transportowych i logistycznych.", price: 150, badge: "", img: "assets/placeholder-baner.jpg", configCat: "baner" },
-      { id: "baner-sklep", title: "Baner Sklep Internetowy", desc: "Promuj swój e-commerce w przestrzeni miejskiej.", price: 150, badge: "Nowość", img: "assets/placeholder-baner.jpg", configCat: "baner" },
-      { id: "baner-uniwersalny", title: "Baner Uniwersalny", desc: "Czysty, uniwersalny projekt dostosowany do każdej branży.", price: 150, badge: "", img: "assets/placeholder-baner.jpg", configCat: "baner" }
+      { id: "baner-budowlany", title: "Baner Budowlany", desc: "Wytrzymały baner dla firm remontowych i budowlanych.", price: 150, badge: "Popularne", img: "assets/catalog/placeholder.svg", configCat: "baner" },
+      { id: "baner-mechanik", title: "Baner Mechanik", desc: "Zwiększ widoczność swojego warsztatu samochodowego.", price: 150, badge: "", img: "assets/catalog/placeholder.svg", configCat: "baner" },
+      { id: "baner-beauty", title: "Baner Beauty", desc: "Elegancki baner dla salonów kosmetycznych i fryzjerskich.", price: 150, badge: "Nowość", img: "assets/catalog/placeholder.svg", configCat: "baner" },
+      { id: "baner-gastronomia", title: "Baner Gastronomia", desc: "Apetyczny projekt banera dla restauracji i food trucków.", price: 150, badge: "", img: "assets/catalog/placeholder.svg", configCat: "baner" },
+      { id: "baner-transport", title: "Baner Transport", desc: "Czytelny baner dla firm transportowych i logistycznych.", price: 150, badge: "", img: "assets/catalog/placeholder.svg", configCat: "baner" },
+      { id: "baner-sklep", title: "Baner Sklep Internetowy", desc: "Promuj swój e-commerce w przestrzeni miejskiej.", price: 150, badge: "Nowość", img: "assets/catalog/placeholder.svg", configCat: "baner" },
+      { id: "baner-uniwersalny", title: "Baner Uniwersalny", desc: "Czysty, uniwersalny projekt dostosowany do każdej branży.", price: 150, badge: "", img: "assets/catalog/placeholder.svg", configCat: "baner" }
     ],
     wizytowka: [
-      { id: "wizytowka-basic", title: "Projekt Wizytówki", desc: "Zrób świetne pierwsze wrażenie. Eleganckie i nowoczesne.", price: 100, badge: "", img: "assets/placeholder-wizytowka.jpg", configCat: "wizytowka" }
+      { id: "wizytowka-basic", title: "Projekt Wizytówki", desc: "Zrób świetne pierwsze wrażenie. Eleganckie i nowoczesne.", price: 100, badge: "", img: "assets/WIZYTOWKI-b-scaled.png", configCat: "wizytowka" }
     ],
     ulotka: [
-       { id: "ulotka-basic", title: "Projekt Ulotki", desc: "Skuteczna reklama w formacie papierowym. Różne formaty.", price: 200, badge: "", img: "assets/placeholder-ulotka.jpg", configCat: "ulotka" }
+       { id: "ulotka-basic", title: "Projekt Ulotki", desc: "Skuteczna reklama w formacie papierowym. Różne formaty.", price: 200, badge: "", img: "assets/HOME-IMAGE-1.png", configCat: "ulotka" }
     ],
     social: [
-       { id: "social-basic", title: "Projekt Social Media", desc: "Spójny wizerunek na Facebooku, Instagramie i LinkedInie.", price: 300, badge: "Popularne", img: "assets/placeholder-social.jpg", configCat: "social" }
+       { id: "social-basic", title: "Projekt Social Media", desc: "Spójny wizerunek na Facebooku, Instagramie i LinkedInie.", price: 300, badge: "Popularne", img: "assets/Zasob-5-1-1.png", configCat: "social" }
     ],
     www: [
-       { id: "www-basic", title: "Projekt Strony WWW", desc: "Nowoczesna, responsywna strona szyta na miarę.", price: 2000, badge: "", img: "assets/placeholder-www.jpg", configCat: "www" }
+       { id: "www-basic", title: "Projekt Strony WWW", desc: "Nowoczesna, responsywna strona szyta na miarę.", price: 2000, badge: "", img: "assets/P003-scaled.png", configCat: "www" }
     ],
     inne: [
-       { id: "inne-basic", title: "Inny Projekt", desc: "Nie znalazłeś tego, czego szukasz? Skontaktuj się z nami.", price: 0, badge: "", img: "assets/placeholder-inne.jpg", configCat: "inne" }
+       { id: "inne-basic", title: "Inny Projekt", desc: "Nie znalazłeś tego, czego szukasz? Skontaktuj się z nami.", price: 0, badge: "", img: "assets/catalog/placeholder.svg", configCat: "inne" }
     ]
   };
 
   let currentStoreCategory = "logo";
 
-  const renderStoreProducts = () => {
+  const renderStoreProducts = async () => {
     if (!storeProductsGrid) return;
+    
+    // Pobierz dynamiczny katalog z API
+    try {
+        const dynamicCatalog = await requestJson("/api/banner-catalog");
+        if (dynamicCatalog && dynamicCatalog.banners) {
+            // Wyczyść kategorię baner przed załadowaniem (żeby nie było duplikatów)
+            // Używamy dynamicznych produktów z panelu Admina!
+            // Możemy połączyć wszystkie kategorie z admina z naszym widokiem sklepu:
+            const newStoreProducts = {
+                logo: [ { id: "logo-basic", title: "Projekt Logo", desc: "Profesjonalne logo dla Twojej marki.", price: 800, badge: "Popularne", img: "assets/BRANDING.png", configCat: "logo" } ],
+                wizytowka: [ { id: "wizytowka-basic", title: "Projekt Wizytówki", desc: "Eleganckie i nowoczesne.", price: 100, badge: "", img: "assets/WIZYTOWKI-b-scaled.png", configCat: "wizytowka" } ],
+                ulotka: [ { id: "ulotka-basic", title: "Projekt Ulotki", desc: "Skuteczna reklama w formacie papierowym.", price: 200, badge: "", img: "assets/HOME-IMAGE-1.png", configCat: "ulotka" } ],
+                social: [ { id: "social-basic", title: "Projekt Social Media", desc: "Spójny wizerunek w social mediach.", price: 300, badge: "Popularne", img: "assets/Zasob-5-1-1.png", configCat: "social" } ],
+                www: [ { id: "www-basic", title: "Projekt Strony WWW", desc: "Nowoczesna, responsywna strona.", price: 2000, badge: "", img: "assets/P003-scaled.png", configCat: "www" } ],
+                inne: [ { id: "inne-basic", title: "Inny Projekt", desc: "Skontaktuj się z nami.", price: 0, badge: "", img: "assets/catalog/placeholder.svg", configCat: "inne" } ],
+                baner: [] // czyścimy hardkodowane banery
+            };
+            
+            // Wstrzykujemy produkty z bazy (Admina)
+            dynamicCatalog.banners.forEach(b => {
+                let cat = b.category ? b.category.toLowerCase() : "baner";
+                // Jeśli kategoria z bazy to "baner" lub nie ma jej w newStoreProducts, wrzucamy do banerów,
+                // albo jeśli stworzyli nową kategorię to ją dodajemy
+                
+                // Mapujemy nazwę kategorii z Admina na klucze nawigacji w sklepie:
+                // Zwykle admin dodaje do "Baner"
+                let targetCat = "baner"; // domyślnie pokazuj wszystko w zakładce Baner jeśli nie znaleziono
+                if (newStoreProducts[cat]) targetCat = cat;
+                else if (cat === "logo" || cat === "wizytowka" || cat === "ulotka" || cat === "social" || cat === "www" || cat === "inne") targetCat = cat;
+
+                if(!newStoreProducts[targetCat]) newStoreProducts[targetCat] = [];
+                
+                // Parsuj cenę z tekstu
+                let parsedPrice = 0;
+                if (b.priceFrom) {
+                    let match = b.priceFrom.match(/\d+/);
+                    if (match) parsedPrice = parseInt(match[0], 10);
+                }
+
+                newStoreProducts[targetCat].push({
+                    id: b.id,
+                    title: b.title,
+                    desc: b.description || "Indywidualny projekt z naszego katalogu.",
+                    price: parsedPrice,
+                    badge: b.isActive ? "" : "Niedostępny",
+                    img: b.image || "assets/catalog/placeholder.svg",
+                    configCat: "baner", // Używamy logiki konfiguratora banerów
+                    adminTemplateName: b.title // zachowaj nazwę z bazy do konfiguratora
+                });
+            });
+            
+            storeProducts = newStoreProducts;
+        }
+    } catch(err) {
+        console.log("Nie udało się pobrać katalogu", err);
+    }
+
     const products = storeProducts[currentStoreCategory] || [];
     storeProductsGrid.innerHTML = "";
 
@@ -1448,7 +1660,7 @@ function initProductConfigurator() {
               <span>Cena od</span>
               <strong>${priceText}</strong>
             </div>
-            <button class="product-card__btn magnetic" type="button" data-open-config="${prod.configCat}" data-product-title="${prod.title}">
+            <button class="product-card__btn magnetic" type="button" data-open-config="${prod.configCat}" data-product-title="${prod.title}" data-template-id="${prod.id}">
               <span>Konfiguruj</span>
               <i data-lucide="arrow-right" aria-hidden="true"></i>
             </button>
@@ -1485,12 +1697,15 @@ function initProductConfigurator() {
       btn.addEventListener("click", (e) => {
         const cat = e.currentTarget.dataset.openConfig;
         const pTitle = e.currentTarget.dataset.productTitle;
-        openConfigurator(cat, pTitle);
+        const templateId = e.currentTarget.dataset.templateId; // id z bazy
+        openConfigurator(cat, pTitle, templateId);
       });
     });
   };
 
-  const openConfigurator = (category, productTitle) => {
+  let selectedTemplateId = null;
+  const openConfigurator = (category, productTitle, templateId) => {
+    selectedTemplateId = templateId;
     if (storeView && configuratorView) {
       storeView.classList.add("hidden");
       configuratorView.classList.remove("hidden");
@@ -1569,6 +1784,16 @@ function initProductConfigurator() {
           { label: "Personalizowany projekt", price: 0, deadline: 0, value: "" },
           ...categories.map(c => ({ label: `Gotowy wzór: ${c}`, price: 0, deadline: 0, value: c }))
         ];
+        
+        // Auto-select based on selectedTemplateId
+        if (selectedTemplateId) {
+            const tmpl = currentBannerCatalog.banners.find(b => b.id === selectedTemplateId);
+            if (tmpl) {
+                const idx = categories.indexOf(tmpl.category);
+                if (idx !== -1) selectedBannerCategoryIndex = idx + 1; // +1 because of 'Personalizowany projekt'
+                currentConfig["bannerTemplate"] = selectedTemplateId;
+            }
+        }
 
         dynamicFields.unshift({
           id: "bannerCategory",

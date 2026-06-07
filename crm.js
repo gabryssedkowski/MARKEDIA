@@ -9,7 +9,7 @@ let currentOrderIdForStatus = null;
 
 function getOrdersFromStorage() {
     try {
-        const stored = localStorage.getItem('markedia_orders');
+        const stored = localStorage.getItem('markedia-orders');
         return stored ? JSON.parse(stored) : [];
     } catch (e) {
         console.error("Error reading orders", e);
@@ -18,12 +18,48 @@ function getOrdersFromStorage() {
 }
 
 function saveOrdersToStorage(orders) {
-    localStorage.setItem('markedia_orders', JSON.stringify(orders));
+    localStorage.setItem('markedia-orders', JSON.stringify(orders));
 }
 
 function loadOrders() {
     ordersData = getOrdersFromStorage();
     renderOrders();
+    updateDashboardStats();
+    updateFunnelStats();
+}
+
+function updateDashboardStats() {
+    const totalRevenueEl = document.querySelector('.stat-item:nth-child(1) .stat-value');
+    const totalOrdersEl = document.querySelector('.stat-item:nth-child(1) .stat-desc');
+    const newCustomersEl = document.querySelector('.stat-item:nth-child(2) .stat-value');
+    const newTasksEl = document.querySelector('.stat-item:nth-child(3) .stat-value');
+    
+    if(!totalRevenueEl) return;
+    
+    const activeOrders = ordersData.filter(o => o.status === 'nowe' || o.status === 'w_realizacji');
+    const revenue = ordersData.reduce((sum, o) => {
+        if (o.status === 'anulowane') return sum;
+        let orderTotal = 0;
+        if(o.total) {
+            orderTotal = Number(o.total);
+        } else if (o.items && o.items.length > 0) {
+            orderTotal = o.items.reduce((s, item) => s + (Number(item.price) || 0), 0);
+        }
+        return sum + orderTotal;
+    }, 0);
+    
+    totalRevenueEl.innerHTML = revenue + ' zł <span class="badge positive">Netto</span>';
+    totalOrdersEl.innerHTML = 'Z ' + ordersData.length + ' zamówień<br>Šącznie';
+    
+    if (newCustomersEl) {
+        document.querySelector('.stat-item:nth-child(2) .stat-desc').innerHTML = 'Nowe zapytania<br>W systemie';
+        newCustomersEl.innerHTML = ordersData.filter(o => o.status === 'nowe').length + ' <span class="badge neutral">Nowe</span>';
+    }
+    
+    if (newTasksEl) {
+        document.querySelector('.stat-item:nth-child(3) .stat-desc').innerHTML = 'Zlecenia<br>W toku';
+        newTasksEl.innerHTML = activeOrders.length + ' <span class="badge positive">W realizacji</span>';
+    }
 }
 
 function renderOrders() {
@@ -38,28 +74,43 @@ function renderOrders() {
     const cardColors = ['blue', 'teal', 'black', 'yellow', 'bg-light'];
 
     grid.innerHTML = ordersData.map((order, index) => {
-        const date = new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const date = new Date(order.createdAt).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric', year: 'numeric' });
         const colorClass = cardColors[index % cardColors.length];
         const statusMap = {
             'nowe': 'Nowe',
             'w_realizacji': 'W trakcie',
-            'gotowe': 'Gotowe do wysyłki',
-            'wyslane': 'Wysłane'
+            'zakonczone': 'Zakończone',
+            'anulowane': 'Anulowane'
         };
         const displayStatus = statusMap[order.status || 'nowe'] || order.status;
+        
+        let clientName = order.customer?.contact || order.contact || 'Klient nieznany';
+        let productText = '';
+        let totalVal = 0;
+        
+        if (order.items && order.items.length > 0) {
+            productText = order.items.map(i => i.title).join(' + ');
+            totalVal = order.total;
+        } else {
+            productText = order.title || order.template || 'Zamówienie Brak';
+            totalVal = order.price || 'Wycena';
+        }
 
         return `
             <div class="history-card ${colorClass}" onclick="openStatusModal('${order.id}')">
-                <div class="card-date">${date} - ${displayStatus}</div>
-                <div class="card-title">${order.items ? order.items[0]?.title : order.title || 'Zamówienie'}</div>
-                <div class="card-amount">${order.total || 'N/A'} zł</div>
+                <div class="card-date" style="font-weight: 600;">${date} &bull; ${displayStatus}</div>
+                <div class="card-title" style="margin-top: 0.5rem; font-size: 1.1rem;">${clientName}</div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 1rem; line-height: 1.3;">
+                    ${productText}
+                </div>
+                <div class="card-amount" style="font-size: 1.25rem;">${totalVal} zł</div>
 
                 <div class="card-action"><i data-lucide="${colorClass === 'black' ? 'arrow-up-right' : 'more-horizontal'}"></i></div>
 
                 <div class="card-avatars">
-                    <img src="https://i.pravatar.cc/150?img=${(index * 3 + 1) % 70}" alt="avatar">
-                    <img src="https://i.pravatar.cc/150?img=${(index * 3 + 2) % 70}" alt="avatar">
-                    <img src="https://i.pravatar.cc/150?img=${(index * 3 + 3) % 70}" alt="avatar">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--paper); color: var(--foreground); display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        ${clientName.charAt(0).toUpperCase()}
+                    </div>
                 </div>
             </div>
         `;
@@ -177,5 +228,60 @@ function initAdminProfile() {
                 renderProfile();
             }
         });
+    }
+}
+
+function updateFunnelStats() {
+    const totalPipelineEl = document.querySelector('.funnel-total h3');
+    if (!totalPipelineEl) return;
+    
+    const nowe = ordersData.filter(o => o.status === 'nowe');
+    const wTrakcie = ordersData.filter(o => o.status === 'w_realizacji');
+    const zakonczone = ordersData.filter(o => o.status === 'zakonczone');
+    
+    const sumOrders = (orders) => orders.reduce((sum, o) => {
+        let t = Number(o.total);
+        if(!t && o.items) t = o.items.reduce((s,i) => s + (Number(i.price)||0), 0);
+        return sum + (t||0);
+    }, 0);
+    
+    const vNowe = sumOrders(nowe);
+    const vWTrakcie = sumOrders(wTrakcie);
+    const vZakonczone = sumOrders(zakonczone);
+    
+    const total = vNowe + vWTrakcie + vZakonczone;
+    
+    totalPipelineEl.innerHTML = `${total} zŅ`;
+    
+    const stagesContainer = document.querySelector('.funnel-stages');
+    if(stagesContainer) {
+        const pNowe = total ? Math.round((vNowe/total)*100) : 0;
+        const pWTrakcie = total ? Math.round((vWTrakcie/total)*100) : 0;
+        const pZakonczone = total ? Math.round((vZakonczone/total)*100) : 0;
+        
+        stagesContainer.innerHTML = `
+            <div class="stage" style="width: ${pNowe || 10}%;">
+                <div class="stage-info">
+                    <span class="stage-name">Nowe zapytania</span>
+                    <span class="stage-val">${vNowe} zł</span>
+                </div>
+                <button><i data-lucide="maximize-2"></i></button>
+            </div>
+            <div class="stage" style="width: ${pWTrakcie || 10}%;">
+                <div class="stage-info">
+                    <span class="stage-name">W realizacji</span>
+                    <span class="stage-val">${vWTrakcie} zł</span>
+                </div>
+                <button><i data-lucide="maximize-2"></i></button>
+            </div>
+            <div class="stage" style="width: ${pZakonczone || 10}%;">
+                <div class="stage-info">
+                    <span class="stage-name">Zakończone</span>
+                    <span class="stage-val">${vZakonczone} zł</span>
+                </div>
+                <button><i data-lucide="maximize-2"></i></button>
+            </div>
+        `;
+        if(window.lucide) window.lucide.createIcons();
     }
 }

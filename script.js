@@ -1129,6 +1129,106 @@ function initCart() {
   }
 
 
+
+  function updateCartUI() {
+    let total = 0;
+    let count = 0;
+
+    if (!cartItemsContainer) return;
+
+    cartItemsContainer.innerHTML = '';
+
+    if (cartState.items.length === 0) {
+      cartItemsContainer.innerHTML = '<div class="cart-empty"><p>Twój koszyk jest pusty</p></div>';
+    } else {
+      cartState.items.forEach((item, index) => {
+        const itemTotal = item.price * (item.quantity || 1);
+        total += itemTotal;
+        count += (item.quantity || 1);
+
+        let configHtml = '';
+        if (item.config) {
+            configHtml = '<ul class="cart-item__config">';
+            for (const [key, val] of Object.entries(item.config)) {
+               configHtml += `<li>${key}: ${val}</li>`;
+            }
+            configHtml += '</ul>';
+        }
+
+        const itemEl = document.createElement('div');
+        itemEl.className = 'cart-item';
+        itemEl.innerHTML = `
+          <div class="cart-item__details">
+            <h4 class="cart-item__title">${item.title}</h4>
+            ${configHtml}
+            <div class="cart-item__price">${item.price} zł</div>
+          </div>
+          <div class="cart-item__actions">
+            <div class="quantity-selector">
+              <button class="quantity-btn minus" data-cart-update="${index}" data-action="minus"><i data-lucide="minus"></i></button>
+              <span class="quantity-val">${item.quantity || 1}</span>
+              <button class="quantity-btn plus" data-cart-update="${index}" data-action="plus"><i data-lucide="plus"></i></button>
+            </div>
+            <button class="btn btn--icon cart-item__remove" data-cart-remove="${index}">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+        `;
+        cartItemsContainer.appendChild(itemEl);
+      });
+    }
+
+    if (cartTotal) cartTotal.textContent = `${total} zł`;
+    cartCounts.forEach(el => el.textContent = count);
+
+    // Re-initialize Lucide icons for new elements
+    if (window.lucide) {
+      window.lucide.createIcons({
+         root: cartItemsContainer
+      });
+    }
+
+    // Reattach listeners
+    cartItemsContainer.querySelectorAll('[data-cart-update]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt(btn.getAttribute('data-cart-update'));
+        const action = btn.getAttribute('data-action');
+        if (action === 'plus') {
+          cartState.items[index].quantity = (cartState.items[index].quantity || 1) + 1;
+        } else if (action === 'minus') {
+          if (cartState.items[index].quantity > 1) {
+             cartState.items[index].quantity -= 1;
+          } else {
+             cartState.items.splice(index, 1);
+          }
+        }
+        saveCart();
+        updateCartUI();
+      });
+    });
+
+    cartItemsContainer.querySelectorAll('[data-cart-remove]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt(btn.getAttribute('data-cart-remove'));
+        cartState.items.splice(index, 1);
+        saveCart();
+        updateCartUI();
+      });
+    });
+  }
+
+  document.addEventListener('cart:add', (e) => {
+    const newItem = e.detail;
+    newItem.quantity = 1;
+    // Sprawdź czy podobny item istnieje (proste podejście, ignorujemy złożoność configu na rzecz prostoty, lub nie łączymy)
+    // Bezpieczniej nie łączyć, bo konfiguracje mogą się różnić
+    cartState.items.push(newItem);
+    saveCart();
+    updateCartUI();
+    toggleCart(); // Otwórz koszyk po dodaniu
+  });
+
+
   function toggleCart() {
     if (!drawer || !overlay) return;
     const isOpen = drawer.classList.contains("is-open");
@@ -1162,6 +1262,10 @@ function initCart() {
     }
   }
 
+
+
+  toggleBtns.forEach(btn => btn.addEventListener("click", toggleCart));
+  if (overlay) overlay.addEventListener("click", toggleCart);
 
   const allCheckoutBtns = document.querySelectorAll("[data-cart-checkout]");
   allCheckoutBtns.forEach(btn => {

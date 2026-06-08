@@ -1141,6 +1141,10 @@ function initCart() {
       document.body.style.overflow = "";
 
       // Reset view when closing
+      const formContainer = drawer.querySelector('#cart-checkout-form-container');
+      const checkoutBtnEl = drawer.querySelector('[data-cart-checkout]');
+      if (formContainer) formContainer.style.display = 'none';
+      if (checkoutBtnEl) checkoutBtnEl.style.display = 'flex';
       const itemsBody = drawer.querySelector('[data-cart-items]');
       const footer = drawer.querySelector('.cart-drawer__footer');
       const checkoutView = drawer.querySelector('[data-cart-checkout-view]');
@@ -1158,252 +1162,91 @@ function initCart() {
     }
   }
 
-  function showCheckoutForm() {
-      const itemsBody = drawer.querySelector('[data-cart-items]');
-      const footer = drawer.querySelector('.cart-drawer__footer');
 
-      if(itemsBody) itemsBody.style.display = 'none';
-      if(footer) footer.style.display = 'none';
+  const allCheckoutBtns = document.querySelectorAll("[data-cart-checkout]");
+  allCheckoutBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+          if (cartState.items.length === 0) return;
 
-      const checkoutHtml = `
-        <div class="cart-checkout-view" data-cart-checkout-view style="padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;">
-            <h3>Dokończ zamówienie</h3>
-            <form id="checkout-form" class="banner-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <label style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <span>Imię i nazwisko / Firma *</span>
-                    <input type="text" name="contact" required style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground);" />
-                </label>
-                <label style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <span>Email *</span>
-                    <input type="email" name="email" required style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground);" />
-                </label>
-                <label style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <span>Telefon *</span>
-                    <input type="tel" name="phone" required style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground);" />
-                </label>
-                <label style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <span>Uwagi (np. dane do FV)</span>
-                    <textarea name="notes" rows="3" style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); color: var(--foreground);"></textarea>
-                </label>
-                <div class="cart-summary" style="padding-top: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between;">
-                    <span>Do zapłaty:</span>
-                    <strong>${cartState.items.reduce((sum, item) => sum + item.price, 0)} zł netto</strong>
-                </div>
-                <div style="display: flex; gap: 1rem;">
-                    <button type="button" class="btn btn--outline" id="cancel-checkout" style="flex: 1;">Wróć</button>
-                    <button type="submit" class="btn btn--primary magnetic" style="flex: 1;">Wyślij</button>
-                </div>
-            </form>
-        </div>
-      `;
+          const activeDrawer = btn.closest('.cart-drawer');
+          const formContainer = activeDrawer ? activeDrawer.querySelector("#cart-checkout-form-container") : document.getElementById("cart-checkout-form-container");
 
-      const checkoutContainer = document.createElement('div');
-      checkoutContainer.innerHTML = checkoutHtml;
+          if (formContainer) {
+              formContainer.style.display = "block";
+              btn.style.display = "none";
 
-      if (itemsBody && itemsBody.parentNode) {
-          itemsBody.parentNode.insertBefore(checkoutContainer.firstElementChild, footer);
-      }
+              const savedProfile = localStorage.getItem('markedia-customer-profile');
+              if (savedProfile) {
+                  try {
+                      const profile = JSON.parse(savedProfile);
+                      const nameInput = formContainer.querySelector('#checkout-name');
+                      const companyInput = formContainer.querySelector('#checkout-company');
+                      const emailInput = formContainer.querySelector('#checkout-email');
+                      const phoneInput = formContainer.querySelector('#checkout-phone');
 
-      document.getElementById('cancel-checkout').addEventListener('click', () => {
-          const view = drawer.querySelector('[data-cart-checkout-view]');
-          if(view) view.remove();
-          if(itemsBody) itemsBody.style.display = 'flex';
-          if(footer) footer.style.display = 'block';
-      });
-
-      document.getElementById('checkout-form').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const fd = new FormData(e.target);
-          const customerData = Object.fromEntries(fd.entries());
-
-          try {
-              const submitBtn = e.target.querySelector('button[type="submit"]');
-              submitBtn.textContent = 'Wysyłanie...';
-              submitBtn.disabled = true;
-
-              await requestJson('/api/orders', {
-                  method: 'POST',
-                  body: JSON.stringify({
-                      items: cartState.items,
-                      total: cartState.items.reduce((sum, item) => sum + item.price, 0),
-                      customer: customerData,
-                      notes: customerData.notes
-                  })
-              });
-
-              cartState.items = [];
-              saveCart();
-              updateCartUI();
-
-              drawer.querySelector('[data-cart-checkout-view]').innerHTML = `
-                <div style="text-align: center; padding: 3rem 1rem;">
-                    <i data-lucide="check-circle" style="width: 64px; height: 64px; color: #22c55e; margin-bottom: 1.5rem; display: inline-block;"></i>
-                    <h3 style="margin-bottom: 1rem;">Zamówienie wysłane!</h3>
-                    <p style="color: var(--muted); line-height: 1.6;">Dziękujemy! Otrzymaliśmy Twoje zamówienie. Skontaktujemy się z Tobą najszybciej jak to możliwe w celu omówienia szczegółów.</p>
-                </div>
-              `;
-              if (window.lucide) window.lucide.createIcons();
-
-              setTimeout(() => {
-                  toggleCart();
-              }, 5000);
-
-          } catch(err) {
-              alert('Błąd: ' + err.message);
-              const submitBtn = e.target.querySelector('button[type="submit"]');
-              submitBtn.textContent = 'Wyślij';
-              submitBtn.disabled = false;
+                      if (nameInput) nameInput.value = profile.name || '';
+                      if (companyInput) companyInput.value = profile.company || '';
+                      if (emailInput) emailInput.value = profile.email || '';
+                      if (phoneInput) phoneInput.value = profile.phone || '';
+                  } catch(e) {}
+              }
           }
       });
-  }
+  });
 
+    // Handle forms for both index.html and zamow.html
+  const checkoutForms = document.querySelectorAll("#cart-checkout-form");
+  checkoutForms.forEach(checkoutForm => {
+      checkoutForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          if (cartState.items.length === 0) return;
 
-  function updateCartUI() {
-    if (!cartItemsContainer || !cartTotal || !cartCounts) return;
+          const name = checkoutForm.querySelector('#checkout-name').value;
+          const company = checkoutForm.querySelector('#checkout-company').value;
+          const email = checkoutForm.querySelector('#checkout-email').value;
+          const phone = checkoutForm.querySelector('#checkout-phone').value;
+          const notes = checkoutForm.querySelector('#checkout-notes').value;
 
-    let totalElements = 0;
-    let totalPrice = 0;
+          const profile = { name, company, email, phone };
+          localStorage.setItem('markedia-customer-profile', JSON.stringify(profile));
 
-    cartItemsContainer.innerHTML = "";
+          const orderId = 'MRK-' + Math.random().toString(36).substr(2, 4).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+          const totalValue = cartState.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-    if (cartState.items.length === 0) {
-      cartItemsContainer.innerHTML = '<p class="cart-empty-message">Twój koszyk jest pusty.</p>';
-    } else {
-      cartState.items.forEach((item, index) => {
-        totalElements += item.quantity;
-        totalPrice += item.price * item.quantity;
+          const order = {
+              id: orderId,
+              createdAt: new Date().toISOString(),
+              status: 'nowe',
+              statusRealizacji: 'nowe', // Future-proof CRM field
+              total: totalValue,
+              customerDetails: profile,
+              notes: notes,
+              adminNotes: '', // Future-proof
+              clientMessages: [], // Future-proof
+              projectFiles: [], // Future-proof
+              eta: '14 dni roboczych', // Future-proof
+              items: cartState.items
+          };
 
-        const cartItemHTML = `
-          <div class="cart-item">
-            <div class="cart-item__info">
-              <span class="cart-item__title">${item.title}</span>
-              <span class="cart-item__price">${item.price} zł</span>
-            </div>
-            <div class="cart-item__actions">
-              <div class="cart-item__quantity">
-                <button type="button" data-cart-action="decrease" data-index="${index}" aria-label="Zmniejsz ilość">
-                  <i data-lucide="minus"></i>
-                </button>
-                <span>${item.quantity}</span>
-                <button type="button" data-cart-action="increase" data-index="${index}" aria-label="Zwiększ ilość">
-                  <i data-lucide="plus"></i>
-                </button>
-              </div>
-              <button class="cart-item__remove" type="button" data-cart-action="remove" data-index="${index}" aria-label="Usuń z koszyka">
-                <i data-lucide="trash-2"></i>
-              </button>
-            </div>
-          </div>
-        `;
-        cartItemsContainer.insertAdjacentHTML("beforeend", cartItemHTML);
+          const existingOrders = JSON.parse(localStorage.getItem('markedia-orders') || '[]');
+          existingOrders.unshift(order);
+          localStorage.setItem('markedia-orders', JSON.stringify(existingOrders));
+
+          cartState.items = [];
+          saveCart();
+          updateCartUI();
+
+          if (typeof toggleCart === 'function') toggleCart();
+
+          // Show confirmation modal
+          const modal = document.getElementById('order-confirmation-modal');
+          if (modal) {
+              document.getElementById('confirm-order-id').innerText = orderId;
+              document.getElementById('confirm-order-total').innerText = totalValue + ' zł';
+              modal.style.display = 'flex';
+          }
       });
-    }
-
-    cartCounts.forEach(counter => {
-      counter.textContent = totalElements;
-      // Ukryj badge gdy zero
-      if(totalElements === 0) {
-        counter.style.display = 'none';
-      } else {
-        counter.style.display = 'flex';
-      }
-    });
-
-    cartTotal.textContent = `${totalPrice} zł`;
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
-  }
-
-  function addToCart(id, title, price) {
-    const parsedPrice = parseFloat(price);
-    if (isNaN(parsedPrice)) return;
-
-    const existingItem = cartState.items.find((item) => item.id === id);
-
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cartState.items.push({ id, title, price: parsedPrice, quantity: 1 });
-    }
-
-    saveCart();
-    updateCartUI();
-    toggleCart(); // Otwórz koszyk po dodaniu
-  }
-
-  function updateQuantity(index, delta) {
-    if (cartState.items[index]) {
-      cartState.items[index].quantity += delta;
-      if (cartState.items[index].quantity <= 0) {
-        cartState.items.splice(index, 1);
-      }
-      saveCart();
-      updateCartUI();
-    }
-  }
-
-  function removeItem(index) {
-    if (cartState.items[index]) {
-      cartState.items.splice(index, 1);
-      saveCart();
-      updateCartUI();
-    }
-  }
-
-  // Event Listeners
-  toggleBtns.forEach((btn) => {
-    btn.addEventListener("click", toggleCart);
   });
-
-  if (overlay) {
-    overlay.addEventListener("click", toggleCart);
-  }
-
-  document.addEventListener("cart:add", (e) => {
-    const item = e.detail;
-    addToCart(item.id, item.title, item.price);
-  });
-
-  addToCartBtns.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const id = btn.dataset.itemId;
-      const title = btn.dataset.itemTitle;
-      const price = btn.dataset.itemPrice;
-      addToCart(id, title, price);
-    });
-  });
-
-  if (cartItemsContainer) {
-    cartItemsContainer.addEventListener("click", (e) => {
-      const actionBtn = e.target.closest("[data-cart-action]");
-      if (!actionBtn) return;
-
-      const action = actionBtn.dataset.cartAction;
-      const index = parseInt(actionBtn.dataset.index, 10);
-
-      if (isNaN(index)) return;
-
-      if (action === "increase") updateQuantity(index, 1);
-      if (action === "decrease") updateQuantity(index, -1);
-      if (action === "remove") removeItem(index);
-    });
-  }
-
-  if (checkoutBtn) {
-    checkoutBtn.addEventListener("click", () => {
-      if (cartState.items.length === 0) return;
-
-      let emailBody = "Dzień dobry, chciałbym złożyć zamówienie na następujące pakiety:\n\n";
-      cartState.items.forEach(item => {
-        emailBody += `- ${item.title} (x${item.quantity}) - ${item.price * item.quantity} zł\n`;
-      });
-      emailBody += `\nŁączna wartość: ${cartTotal.textContent}\n\nProszę o kontakt w celu finalizacji.`;
-
-      window.location.href = `mailto:markediapl@gmail.com?subject=Zamówienie z koszyka - Markedia&body=${encodeURIComponent(emailBody)}`;
-    });
-  }
 
   // Inicjalizacja UI
   updateCartUI();

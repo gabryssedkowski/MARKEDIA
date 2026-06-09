@@ -1,3 +1,17 @@
+// Security Helper
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g,
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     loadOrders();
     initAdminProfile();
@@ -66,9 +80,60 @@ function updateDashboardStats() {
     }
 }
 
+
+// Global activities memory
+let globalActivities = JSON.parse(localStorage.getItem('markedia-crm-activities')) || [
+    { type: 'create', text: 'Utworzono nowe zamówienie #ORD-562', time: new Date(Date.now() - 3600000).toISOString() },
+    { type: 'status', text: 'Zmieniono status zamówienia #ORD-12345 na W realizacji', time: new Date(Date.now() - 7200000).toISOString() },
+    { type: 'note', text: 'Dodano notatkę do zamówienia #ORD-9876', time: new Date(Date.now() - 86400000).toISOString() }
+];
+
+function logActivity(type, text) {
+    globalActivities.unshift({ type, text, time: new Date().toISOString() });
+    if(globalActivities.length > 50) globalActivities.pop();
+    localStorage.setItem('markedia-crm-activities', JSON.stringify(globalActivities));
+    renderGlobalActivities();
+}
+
+function renderGlobalActivities() {
+    const list = document.getElementById('global-activity-list');
+    if(!list) return;
+    list.innerHTML = '';
+
+    globalActivities.forEach(act => {
+        let iconHtml = '';
+        if(act.type === 'create') iconHtml = '<i data-lucide="plus"></i>';
+        else if(act.type === 'status') iconHtml = '<i data-lucide="refresh-cw"></i>';
+        else if(act.type === 'note') iconHtml = '<i data-lucide="file-text"></i>';
+        else iconHtml = '<i data-lucide="info"></i>';
+
+        const timeStr = new Date(act.time).toLocaleString('pl-PL');
+
+        list.innerHTML += `
+            <div class="activity-item">
+                <div class="activity-icon ${act.type}">
+                    ${iconHtml}
+                </div>
+                <div class="activity-content">
+                    <div class="activity-text">${escapeHTML(act.text)}</div>
+                    <div class="activity-time">${timeStr}</div>
+                </div>
+            </div>
+        `;
+    });
+
+    if(window.lucide) window.lucide.createIcons();
+}
+
 function renderOrders() {
     const grid = document.getElementById('orders-grid');
     if (!grid) return;
+
+    // Add brief loading state to show interactivity, especially if sorting/filtering
+    grid.style.opacity = '0.5';
+    setTimeout(() => {
+        grid.style.opacity = '1';
+    }, 150);
 
     let filteredOrders = ordersData.filter(order => {
         let matchesSearch = true;
@@ -85,19 +150,64 @@ function renderOrders() {
         return matchesSearch && matchesFilter;
     });
 
+    const localOrderSort = document.getElementById('order-sort');
+    if (localOrderSort) {
+        const sortMode = localOrderSort.value;
+        filteredOrders.sort((a, b) => {
+            const dateA = new Date(a.createdAt || a.date || 0);
+            const dateB = new Date(b.createdAt || b.date || 0);
+            const valA = a.price || (a.items && a.items.length ? a.items.reduce((s, i) => s + (i.price || 0)*(i.quantity || 1), 0) : 0);
+            const valB = b.price || (b.items && b.items.length ? b.items.reduce((s, i) => s + (i.price || 0)*(i.quantity || 1), 0) : 0);
+
+            switch (sortMode) {
+                case 'date-desc': return dateB - dateA;
+                case 'date-asc': return dateA - dateB;
+                case 'value-desc': return valB - valA;
+                case 'value-asc': return valA - valB;
+                case 'status': return (a.status || '').localeCompare(b.status || '');
+                default: return 0;
+            }
+        });
+    } else {
+        // default sorting by date desc
+        filteredOrders.sort((a, b) => new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0));
+    }
+
     if (filteredOrders.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Brak zamówień.</p>';
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; color: var(--text-muted); background: var(--card-light); border-radius: var(--radius-md); border: 1px dashed var(--panel-border);">
+                <i data-lucide="package-open" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.2rem; color: var(--text-main);">Brak zamówień</h3>
+                <p style="margin: 0; font-size: 0.9rem;">Nie znaleziono zamówień pasujących do obecnych filtrów.</p>
+            </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
         return;
     }
 
     const cardColors = ['blue', 'teal', 'black', 'yellow', 'bg-light'];
 
     grid.innerHTML = filteredOrders.map((order, index) => {
-        const date = new Date(order.createdAt).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric', year: 'numeric' });
-        const colorClass = cardColors[index % cardColors.length];
+        const orderDateStr = order.createdAt || order.date || new Date().toISOString();
+        const date = new Date(orderDateStr).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        // Use strict colors based on status
+        let cardColorClass = '';
+        switch(order.status) {
+            case 'nowe': cardColorClass = 'blue'; break;
+            case 'w_realizacji': cardColorClass = 'orange'; break;
+            case 'poprawki': cardColorClass = 'orange'; break;
+            case 'do_akceptacji': cardColorClass = 'purple'; break;
+            case 'zakonczone': cardColorClass = 'green'; break;
+            case 'anulowane': cardColorClass = 'red'; break;
+            default: cardColorClass = 'blue';
+        }
+
         const statusMap = {
             'nowe': 'Nowe',
-            'w_realizacji': 'W trakcie',
+            'w_realizacji': 'W realizacji',
+            'poprawki': 'Poprawki',
+            'do_akceptacji': 'Oczekuje na akceptację',
             'zakonczone': 'Zakończone',
             'anulowane': 'Anulowane'
         };
@@ -115,16 +225,27 @@ function renderOrders() {
             totalVal = order.price || 'Wycena';
         }
 
+        clientName = escapeHTML(clientName);
+        productText = escapeHTML(productText);
+
+        const priorityHtml = order.priority ? `<span class="priority-badge priority-${order.priority}">${order.priority === 'high' ? 'Wysoki' : order.priority === 'low' ? 'Niski' : 'Normalny'}</span>` : '';
+        const orderDate = new Date(orderDateStr);
+        const daysSinceCreation = Math.floor((new Date() - orderDate) / (1000 * 60 * 60 * 24));
+        const delayHtml = daysSinceCreation > 7 && (order.status !== 'zakonczone' && order.status !== 'anulowane') ? `<span class="delay-indicator" title="Opóźnienie realizacji! (${daysSinceCreation} dni)">&bull;</span>` : '';
+
         return `
-            <div class="history-card ${colorClass}" onclick="if(!event.target.closest('.card-icon-btn')) openStatusModal('${order.id}')">
-                <div class="card-date" style="font-weight: 600;">${date} &bull; ${displayStatus}</div>
-                <div class="card-title" style="margin-top: 0.5rem; font-size: 1.1rem;">${clientName}</div>
+            <div class="history-card ${cardColorClass}">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap: wrap; gap: 4px;">
+                    <div class="card-date" style="font-weight: 600; margin:0; display:flex; align-items:center; gap: 4px;">${date} &bull; ${displayStatus} ${delayHtml}</div>
+                    ${priorityHtml}
+                </div>
+                <div class="card-title" style="margin-top: 0.5rem; font-size: 1.1rem;" title="${clientName}">${clientName}</div>
                 <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 1rem; line-height: 1.3;">
                     ${productText}
                 </div>
                 <div class="card-amount" style="font-size: 1.25rem;">${totalVal} zł</div>
 
-                <div class="card-action"><i data-lucide="${colorClass === 'black' ? 'arrow-up-right' : 'more-horizontal'}"></i></div>
+                <div class="card-action"><i data-lucide="${cardColorClass === 'black' ? 'arrow-up-right' : 'more-horizontal'}"></i></div>
 
                 <div class="card-actions-group">
                     <button class="card-icon-btn star-btn ${order.isStarred ? 'active' : ''}" onclick="toggleOrderFlag('${order.id}', 'isStarred', event)" title="Wyróżnij"><i data-lucide="star"></i></button>
@@ -135,6 +256,14 @@ function renderOrders() {
                     <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--paper); color: var(--foreground); display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                         ${clientName.charAt(0).toUpperCase()}
                     </div>
+                </div>
+
+                <div class="quick-actions-overlay">
+                    <button class="qa-btn" data-tooltip="Otwórz" onclick="openOrderDetails('${order.id}', event)"><i data-lucide="maximize-2" style="width:18px;height:18px;"></i></button>
+                    <button class="qa-btn" data-tooltip="Edytuj" onclick="editOrderDetails('${order.id}', event)"><i data-lucide="edit-2" style="width:18px;height:18px;"></i></button>
+                    <button class="qa-btn" data-tooltip="Zmień status" onclick="openStatusModal('${order.id}', event)"><i data-lucide="activity" style="width:18px;height:18px;"></i></button>
+                    <button class="qa-btn" data-tooltip="Dodaj notatkę" onclick="openAddNoteModal('${order.id}', event)"><i data-lucide="file-text" style="width:18px;height:18px;"></i></button>
+                    <button class="qa-btn qa-delete" data-tooltip="Usuń" onclick="confirmDeleteOrder('${order.id}', event)"><i data-lucide="trash-2" style="width:18px;height:18px;"></i></button>
                 </div>
             </div>
         `;
@@ -154,21 +283,30 @@ function renderOrders() {
 
 function initModal() {
     const modal = document.getElementById('status-modal');
-    const closeBtn = document.querySelector('.close-modal');
+    const closeBtn = modal ? modal.querySelector('.close-modal') : null;
+    const cancelBtn = modal ? modal.querySelector('.close-modal-btn') : null;
     const saveBtn = document.getElementById('save-status-btn');
 
-    if(!modal || !closeBtn || !saveBtn) return;
+    if(!modal || !saveBtn) return;
 
-    closeBtn.onclick = () => modal.style.display = 'none';
-    window.onclick = (e) => {
-        if (e.target == modal) modal.style.display = 'none';
-    }
+    if (closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
+    if (cancelBtn) cancelBtn.onclick = () => modal.style.display = 'none';
+
+    // Handled in global window listener now
+    // window.onclick = (e) => {
+    //     if (e.target == modal) modal.style.display = 'none';
+    // }
 
     saveBtn.onclick = () => {
         const newStatus = document.getElementById('new-status-select').value;
         if (currentOrderIdForStatus) {
             updateOrderStatus(currentOrderIdForStatus, newStatus);
             modal.style.display = 'none';
+            // Also update modal visually if it is open
+            if(window.currentAdminModalOrderId === currentOrderIdForStatus) {
+                 const order = ordersData.find(o => o.id === currentOrderIdForStatus);
+                 if(order) openOrderDetails(order.id, null);
+            }
         }
     }
 }
@@ -179,6 +317,7 @@ window.toggleOrderFlag = function(orderId, flag, event) {
     if (order) {
         order[flag] = !order[flag];
         saveOrdersToStorage(ordersData);
+        logActivity('info', `Zmieniono oznaczenie (${flag}) dla zamówienia #${orderId}`);
 
         const btn = event.currentTarget;
         if(window.gsap) {
@@ -194,6 +333,8 @@ function initSidebar() {
     const searchContainer = document.getElementById('search-container');
     const searchInput = document.getElementById('order-search-input');
     const closeSearchBtn = document.getElementById('close-search-btn');
+    const localOrderSearch = document.getElementById('order-search');
+    const localOrderSort = document.getElementById('order-sort');
     const grid = document.getElementById('orders-grid');
 
     const dashboardGrid = document.querySelector('.dashboard-grid');
@@ -238,6 +379,19 @@ function initSidebar() {
             grid.classList.remove('list-view');
 
             toggleFullView(false);
+            renderOrders();
+        });
+    }
+
+    if(localOrderSearch) {
+        localOrderSearch.addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            renderOrders();
+        });
+    }
+
+    if(localOrderSort) {
+        localOrderSort.addEventListener('change', (e) => {
             renderOrders();
         });
     }
@@ -374,7 +528,8 @@ function initSidebar() {
     });
 }
 
-window.openStatusModal = function(orderId) {
+window.openStatusModal = function(orderId, event) {
+    if(event) event.stopPropagation();
     currentOrderIdForStatus = orderId;
     const order = ordersData.find(o => o.id === orderId);
     if(order) {
@@ -389,12 +544,16 @@ function updateOrderStatus(orderId, newStatus) {
     if (orderIndex > -1) {
         ordersData[orderIndex].status = newStatus;
         saveOrdersToStorage(ordersData);
+        logActivity('status', `Zmieniono status zamówienia #${orderId} na: ${newStatus}`);
         renderOrders();
+        updateDashboardStats();
+        updateFunnelStats();
     }
 }
 
 // --- Admin Profile Logic ---
 function initAdminProfile() {
+    renderGlobalActivities();
     const defaultProfile = {
         name: 'Eva Robinson',
         title: 'CEO, Inc. Alabama Machinery\n& Supply',
@@ -457,6 +616,7 @@ function initAdminProfile() {
                 profile.firstName = newFirstName;
                 profile.name = `${profile.firstName} ${profile.lastName}`;
                 localStorage.setItem('crm_admin_profile', JSON.stringify(profile));
+                logActivity('info', 'Zaktualizowano profil administratora');
                 renderProfile();
             }
         });
@@ -483,7 +643,7 @@ function updateFunnelStats() {
     
     const total = vNowe + vWTrakcie + vZakonczone;
     
-    totalPipelineEl.innerHTML = `${total} zŅ`;
+    totalPipelineEl.innerHTML = `${total} zł`;
     
     const stagesContainer = document.querySelector('.funnel-stages');
     if(stagesContainer) {
@@ -616,7 +776,8 @@ function renderClientOrders() {
 
     filtered.forEach(order => {
         const statusInfo = getClientStatusInfo(order.status);
-        const orderTitle = order.title || (order.items && order.items.length > 0 ? order.items[0].title : 'Zamówienie niestandardowe');
+        let orderTitle = order.title || (order.items && order.items.length > 0 ? order.items[0].title : 'Zamówienie niestandardowe');
+        orderTitle = escapeHTML(orderTitle);
         const price = (order.items || []).reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
 
         const card = document.createElement('div');
@@ -624,7 +785,7 @@ function renderClientOrders() {
         card.onclick = () => openClientModal(order);
 
         const thumbImg = (order.items && order.items[0] && order.items[0].image) ?
-            `<img src="${order.items[0].image}" alt="thumb">` :
+            `<img src="${escapeHTML(order.items[0].image)}" alt="thumb">` :
             `<i data-lucide="package" style="width:24px;height:24px;"></i>`;
 
         card.innerHTML = `
@@ -668,17 +829,18 @@ function openClientModal(order) {
     if (!modal) return;
 
     const statusInfo = getClientStatusInfo(order.status);
-    const orderTitle = order.title || (order.items && order.items.length > 0 ? order.items[0].title : 'Zamówienie niestandardowe');
+    let orderTitle = order.title || (order.items && order.items.length > 0 ? order.items[0].title : 'Zamówienie niestandardowe');
+    orderTitle = escapeHTML(orderTitle);
     const price = (order.items || []).reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
 
     document.getElementById('modal-client-title').innerText = orderTitle;
     document.getElementById('modal-client-id').innerText = `Zamówienie #${order.id}`;
     document.getElementById('modal-client-date').innerText = new Date(order.date).toLocaleDateString('pl-PL');
-    document.getElementById('modal-client-price').innerText = price + '$';
+    document.getElementById('modal-client-price').innerText = price + ' zł';
 
     const thumbContainer = document.getElementById('modal-client-thumb');
     thumbContainer.innerHTML = (order.items && order.items[0] && order.items[0].image) ?
-            `<img src="${order.items[0].image}" alt="thumb">` :
+            `<img src="${escapeHTML(order.items[0].image)}" alt="thumb">` :
             `<i data-lucide="package" style="width:32px;height:32px;"></i>`;
 
     const badgeContainer = document.getElementById('modal-client-status-badge');
@@ -695,24 +857,29 @@ function openClientModal(order) {
     if (order.items && order.items.length > 0) {
         order.items.forEach(item => {
             optionsHtml += `<div class="client-info-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-                <span class="client-info-val">${item.title} (x${item.quantity})</span>`;
+                <span class="client-info-val">${escapeHTML(item.title)} (x${item.quantity})</span>`;
 
             if (item.options) {
                 Object.entries(item.options).forEach(([key, val]) => {
-                    optionsHtml += `<span class="client-info-label" style="font-size: 0.8rem;">- ${key}: ${val}</span>`;
+                    optionsHtml += `<span class="client-info-label" style="font-size: 0.8rem;">- ${escapeHTML(key)}: ${escapeHTML(val.toString())}</span>`;
                 });
             }
             optionsHtml += `</div>`;
         });
     } else {
-         optionsHtml = '<p style="color:var(--text-muted); font-size: 0.9rem; margin:0;">Brak szczegółowych opcji.</p>';
+         optionsHtml = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; color: var(--text-muted); background: rgba(0,0,0,0.1); border-radius: var(--radius-sm); border: 1px dashed var(--panel-border);">
+                <i data-lucide="settings" style="width: 24px; height: 24px; margin-bottom: 8px; opacity: 0.5;"></i>
+                <p style="margin: 0; font-size: 0.9rem; font-style: italic;">Brak szczegółowych opcji.</p>
+            </div>
+         `;
     }
     optionsContainer.innerHTML = optionsHtml;
 
     // Contact info inside description for now if there isn't a dedicated description
     const descContainer = document.getElementById('modal-client-desc');
     descContainer.innerHTML = `
-        <p><strong>Kontakt:</strong> ${order.contact || 'Brak danych'}</p>
+        <p><strong>Kontakt:</strong> ${escapeHTML(order.contact || 'Brak danych')}</p>
         <p><strong>Uwagi:</strong> Projekty w trakcie analizy zapotrzebowania klienta. Wszelkie uwagi prosimy przesyłać na adres mailowy.</p>
     `;
 
@@ -796,8 +963,8 @@ function renderClientChat(orderId) {
     messages.forEach(msg => {
         html += `
             <div class="chat-msg ${msg.sender}">
-                <div class="chat-bubble">${msg.text}</div>
-                <div class="chat-time">${msg.time}</div>
+                <div class="chat-bubble">${escapeHTML(msg.text)}</div>
+                <div class="chat-time">${escapeHTML(msg.time)}</div>
             </div>
         `;
     });
@@ -898,7 +1065,12 @@ function renderClientFiles(status) {
     }
 
     if (!html) {
-        html = '<p style="color:var(--text-muted); font-size:0.9rem;">Brak plików w tym projekcie.</p>';
+        html = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; color: var(--text-muted); background: rgba(0,0,0,0.1); border-radius: var(--radius-sm); border: 1px dashed var(--panel-border);">
+                <i data-lucide="folder-open" style="width: 24px; height: 24px; margin-bottom: 8px; opacity: 0.5;"></i>
+                <p style="margin: 0; font-size: 0.9rem; font-style: italic;">Brak plików w tym projekcie.</p>
+            </div>
+        `;
     }
 
     filesContainer.innerHTML = html;
@@ -961,5 +1133,264 @@ document.addEventListener('DOMContentLoaded', () => {
             // Here you would send a request to backend to update order status to 'poprawki' or similar
             document.getElementById('client-order-modal').style.display = 'none';
         });
+    }
+});
+
+window.editOrderDetails = function(orderId, event) {
+    if(event) event.stopPropagation();
+    alert('Edycja zamówienia wkrótce...');
+};
+
+window.openAddNoteModal = function(orderId, event) {
+    if(event) event.stopPropagation();
+    window.currentAdminModalOrderId = orderId;
+    document.getElementById('admin-note-input').value = '';
+    document.getElementById('admin-note-modal').style.display = 'flex';
+};
+
+window.confirmDeleteOrder = function(orderId, event) {
+    if(event) event.stopPropagation();
+    if(confirm("Czy na pewno chcesz usunąć to zamówienie? Tej akcji nie można cofnąć.")) {
+        ordersData = ordersData.filter(o => o.id !== orderId);
+        localStorage.setItem('markedia-orders', JSON.stringify(ordersData));
+        logActivity('info', `Usunięto zamówienie #${orderId}`);
+        renderOrders();
+        updateDashboardStats();
+        updateFunnelStats();
+    }
+};
+
+window.openOrderDetails = function(orderId, event) {
+    if(event) event.stopPropagation();
+    const order = ordersData.find(o => o.id === orderId);
+    if(!order) return;
+
+    // Setup modal elements
+    const modal = document.getElementById('admin-order-modal');
+    const orderDateStr = order.createdAt || order.date || new Date().toISOString();
+    document.getElementById('admin-modal-id').innerText = '#' + order.id;
+    document.getElementById('admin-modal-title').innerText = order.title || 'Zamówienie';
+    document.getElementById('admin-modal-date').innerHTML = `<i data-lucide="calendar" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Data: ` + new Date(orderDateStr).toLocaleDateString('pl-PL');
+
+    // Calculate deadline (default +14 days)
+    const deadlineDate = new Date(orderDateStr);
+    deadlineDate.setDate(deadlineDate.getDate() + 14);
+    document.getElementById('admin-modal-deadline').innerHTML = `<i data-lucide="clock" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Termin: ` + deadlineDate.toLocaleDateString('pl-PL');
+
+    // Status Badge
+    const statusMap = {
+        'nowe': 'Nowe',
+        'w_realizacji': 'W realizacji',
+        'poprawki': 'Poprawki',
+        'do_akceptacji': 'Oczekuje na akceptację',
+        'zakonczone': 'Zakończone',
+        'anulowane': 'Anulowane'
+    };
+    const statusText = statusMap[order.status || 'nowe'] || order.status;
+
+    let badgeClass = 'status-badge ';
+    let iconName = 'circle';
+
+    switch(order.status) {
+        case 'nowe': badgeClass += 'pulse-blue'; iconName = 'info'; break;
+        case 'w_realizacji': badgeClass += 'pulse-orange'; iconName = 'loader'; break;
+        case 'do_akceptacji': badgeClass += 'purple'; iconName = 'check-circle'; break;
+        case 'poprawki': badgeClass += 'orange'; iconName = 'edit-3'; break;
+        case 'zakonczone': badgeClass += 'green'; iconName = 'check'; break;
+        case 'anulowane': badgeClass += 'red'; iconName = 'x-circle'; break;
+        default: badgeClass += 'pulse-blue';
+    }
+
+    document.getElementById('admin-modal-status-badge').innerHTML = `
+        <div class="${badgeClass}" style="padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="${iconName}" style="width: 16px; height: 16px;"></i> ${statusText}
+        </div>
+    `;
+
+    // Client Info
+    let contact = order.customer?.contact || order.contact || 'Brak danych kontaktowych';
+    document.getElementById('admin-modal-client-info').innerHTML = `
+        <div style="margin-bottom: 8px;"><strong>Kontakt:</strong> ${escapeHTML(contact)}</div>
+        <div style="color: var(--text-muted); font-size: 0.85rem;">Identyfikator klienta: ${escapeHTML(order.customer?.id || 'Nieznany')}</div>
+    `;
+
+    // Products
+    let productsHtml = '';
+    let total = 0;
+    if (order.items && order.items.length > 0) {
+        productsHtml = order.items.map(item => {
+            total += (item.price || 0) * (item.quantity || 1);
+            return `
+            <div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm);">
+                <div>
+                    <div style="font-weight: 500;">${escapeHTML(item.title || 'Produkt')}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Ilość: ${escapeHTML((item.quantity || 1).toString())}</div>
+                </div>
+                <div style="font-weight: 600;">${(item.price || 0) * (item.quantity || 1)} zł</div>
+            </div>`;
+        }).join('');
+    } else {
+        productsHtml = `
+            <div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm);">
+                <div>
+                    <div style="font-weight: 500;">${escapeHTML(order.title || order.template || 'Zamówienie Brak')}</div>
+                </div>
+                <div style="font-weight: 600;">${escapeHTML((order.price || 'Wycena').toString())}</div>
+            </div>`;
+        total = order.price || 0;
+    }
+
+    // Config info
+    let configHtml = '';
+    if (order.config) {
+        configHtml = '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--panel-border);">';
+        configHtml += '<div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Szczegóły konfiguracji:</div>';
+        for (const [key, val] of Object.entries(order.config)) {
+            if(val) {
+                configHtml += `<div style="font-size: 0.85rem; margin-bottom: 3px;"><strong>${escapeHTML(key)}:</strong> ${escapeHTML(val.toString())}</div>`;
+            }
+        }
+        configHtml += '</div>';
+    }
+
+    document.getElementById('admin-modal-products').innerHTML = productsHtml + configHtml;
+    document.getElementById('admin-modal-total').innerText = total + ' zł';
+
+    // Timeline
+    const steps = [
+        { id: 'nowe', label: 'Nowe', icon: 'file-plus' },
+        { id: 'w_realizacji', label: 'W realizacji', icon: 'loader' },
+        { id: 'poprawki', label: 'Poprawki', icon: 'edit-3' },
+        { id: 'do_akceptacji', label: 'Akceptacja', icon: 'user-check' },
+        { id: 'zakonczone', label: 'Zakończone', icon: 'check-circle' }
+    ];
+
+    let timelineHtml = '';
+    let currentFound = false;
+
+    if (order.status === 'anulowane') {
+        timelineHtml = `
+            <div class="admin-timeline-step active" style="--success: var(--error);">
+                <div class="admin-timeline-content" style="color: var(--error); display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="x-circle" style="width: 16px; height: 16px;"></i> Zamówienie anulowane
+                </div>
+            </div>
+        `;
+    } else {
+        steps.forEach((step) => {
+            let stepClass = '';
+            if (order.status === step.id) {
+                stepClass = 'active';
+                currentFound = true;
+            } else if (!currentFound) {
+                stepClass = 'completed';
+            }
+
+            // Poprawki is a conditional step, skip if not active and order went past it without it
+            if (step.id === 'poprawki' && order.status !== 'poprawki') {
+                // If it's completed, we still show it just so timeline is uniform, or skip it
+                // To keep it simple, we'll just keep standard flow.
+            }
+
+            timelineHtml += `
+                <div class="admin-timeline-step ${stepClass}">
+                    <div class="admin-timeline-content" style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="${step.icon}" style="width: 16px; height: 16px;"></i> ${step.label}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    document.getElementById('admin-modal-timeline').innerHTML = timelineHtml;
+
+    // Notes
+    renderAdminNotes(order);
+
+    // Setup global current for adding notes
+    window.currentAdminModalOrderId = orderId;
+
+    modal.style.display = 'flex';
+
+    if(window.lucide) {
+        lucide.createIcons();
+    }
+};
+
+function renderAdminNotes(order) {
+    const notesContainer = document.getElementById('admin-modal-notes');
+    if (!order.notes || order.notes.length === 0) {
+        notesContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; color: var(--text-muted); background: rgba(0,0,0,0.1); border-radius: var(--radius-sm); border: 1px dashed var(--panel-border);">
+                <i data-lucide="file-text" style="width: 24px; height: 24px; margin-bottom: 8px; opacity: 0.5;"></i>
+                <p style="margin: 0; font-size: 0.9rem; font-style: italic;">Brak notatek do tego zamówienia.</p>
+            </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+        return;
+    }
+
+    notesContainer.innerHTML = order.notes.map(note => `
+        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: var(--radius-sm); border-left: 2px solid var(--purple);">
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; display: flex; justify-content: space-between;">
+                <span>Administrator</span>
+                <span>${new Date(note.date).toLocaleString('pl-PL')}</span>
+            </div>
+            <div style="font-size: 0.95rem; line-height: 1.4;">${escapeHTML(note.text)}</div>
+        </div>
+    `).join('');
+}
+
+window.addNoteFromModal = function() {
+    const orderId = window.currentAdminModalOrderId;
+    if(!orderId) return;
+    document.getElementById('admin-note-input').value = '';
+    document.getElementById('admin-note-modal').style.display = 'flex';
+};
+
+window.saveNoteFromModal = function() {
+    const orderId = window.currentAdminModalOrderId;
+    if(!orderId) return;
+
+    const note = document.getElementById('admin-note-input').value;
+    if (note && note.trim() !== "") {
+        const orderIndex = ordersData.findIndex(o => o.id === orderId);
+        if (orderIndex !== -1) {
+            if (!ordersData[orderIndex].notes) {
+                ordersData[orderIndex].notes = [];
+            }
+            ordersData[orderIndex].notes.push({
+                text: note,
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('markedia-orders', JSON.stringify(ordersData));
+            renderAdminNotes(ordersData[orderIndex]);
+            logActivity('note', `Dodano notatkę do zamówienia #${orderId}`);
+            document.getElementById('admin-note-modal').style.display = 'none';
+        }
+    }
+};
+
+document.getElementById('close-admin-order-modal').addEventListener('click', () => {
+    document.getElementById('admin-order-modal').style.display = 'none';
+});
+
+document.getElementById('close-admin-note-modal').addEventListener('click', () => {
+    document.getElementById('admin-note-modal').style.display = 'none';
+});
+
+// Hide on outside click
+window.addEventListener('click', (e) => {
+    const adminModal = document.getElementById('admin-order-modal');
+    const noteModal = document.getElementById('admin-note-modal');
+    const statusModal = document.getElementById('status-modal');
+    if (e.target === adminModal) {
+        adminModal.style.display = 'none';
+    }
+    if (e.target === noteModal) {
+        noteModal.style.display = 'none';
+    }
+    if (e.target === statusModal) {
+        statusModal.style.display = 'none';
     }
 });

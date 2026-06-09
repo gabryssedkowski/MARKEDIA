@@ -152,6 +152,21 @@
                     </div>
                 </div>
 
+
+                <div class="orders-controls" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; padding: 0 16px;">
+                    <div style="flex: 1; min-width: 200px; position: relative;">
+                        <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted);"></i>
+                        <input type="text" id="order-search" placeholder="Szukaj zamówienia, klienta..." style="width: 100%; padding: 8px 10px 8px 35px; border-radius: var(--radius-sm); border: 1px solid var(--panel-border); background: rgba(255,255,255,0.05); color: white;">
+                    </div>
+                    <select id="order-sort" style="padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--panel-border); background: #2a2a35; color: white; cursor: pointer;">
+                        <option value="date-desc">Data: Najnowsze</option>
+                        <option value="date-asc">Data: Najstarsze</option>
+                        <option value="value-desc">Wartość: Najwyższa</option>
+                        <option value="value-asc">Wartość: Najniższa</option>
+                        <option value="status">Status</option>
+                    </select>
+                </div>
+
                 <div class="history-grid" id="orders-grid">
                     <!-- Orders will be injected here via JS -->
                 </div>
@@ -283,6 +298,39 @@
             </section>
 
             <!-- Projekcja Przychodów -->
+            <section class="panel revenue-chart">
+                <div class="panel-header">
+                    <h2>Projekcja przychodów</h2>
+                    <div class="panel-actions">
+                        <button><i data-lucide="more-horizontal"></i></button>
+                    </div>
+                </div>
+                <div style="height: 200px; display: flex; align-items: flex-end; gap: 10px; margin-top: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--panel-border);">
+                    <div style="flex:1; background: var(--purple); height: 40%; border-radius: 4px 4px 0 0; position:relative; transition: height 0.3s;" title="Styczeń: 40k"></div>
+                    <div style="flex:1; background: var(--teal); height: 70%; border-radius: 4px 4px 0 0; position:relative; transition: height 0.3s;" title="Luty: 70k"></div>
+                    <div style="flex:1; background: var(--yellow); height: 50%; border-radius: 4px 4px 0 0; position:relative; transition: height 0.3s;" title="Marzec: 50k"></div>
+                    <div style="flex:1; background: var(--pink); height: 90%; border-radius: 4px 4px 0 0; position:relative; transition: height 0.3s;" title="Kwiecień: 90k"></div>
+                    <div style="flex:1; background: var(--purple); height: 60%; border-radius: 4px 4px 0 0; position:relative; transition: height 0.3s;" title="Maj: 60k"></div>
+                    <div style="flex:1; background: var(--teal); height: 85%; border-radius: 4px 4px 0 0; position:relative; transition: height 0.3s;" title="Czerwiec: 85k"></div>
+                </div>
+                <div style="display:flex; justify-content: space-between; margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">
+                    <span>Sty</span><span>Lut</span><span>Mar</span><span>Kwi</span><span>Maj</span><span>Cze</span>
+                </div>
+            </section>
+
+            <!-- Ostatnia Aktywność -->
+            <section class="panel activity-panel">
+                <div class="panel-header">
+                    <h2>Ostatnia aktywność</h2>
+                    <div class="panel-actions">
+                        <button><i data-lucide="activity"></i></button>
+                    </div>
+                </div>
+                <div class="activity-list" id="global-activity-list" style="display: flex; flex-direction: column; gap: 15px; max-height: 350px; overflow-y: auto; padding-right: 5px;">
+                    <!-- Activities injected via JS -->
+                </div>
+            </section>
+
             <section class="panel stage-funnel">
                 <div class="panel-header">
                     <h2>Stage Funnel</h2>
@@ -333,19 +381,22 @@
 </div>
 
 <!-- Modal for changing status -->
-<div id="status-modal" class="modal" style="display:none;">
-    <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2>Zmień status zamówienia</h2>
-        <select id="new-status-select">
+<div id="status-modal" class="modal" style="display:none; align-items:center; justify-content:center; z-index: 105;">
+    <div class="modal-content" style="max-width: 400px; width: 90%; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: var(--radius-lg); padding: 30px; position: relative;">
+        <button class="close-modal" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i data-lucide="x"></i></button>
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="activity"></i> Zmień status</h3>
+        <select id="new-status-select" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); color: var(--text-light); border: 1px solid var(--panel-border); border-radius: var(--radius-sm); margin-bottom: 20px; font-family: inherit;">
             <option value="nowe">Nowe</option>
-            <option value="w_realizacji">W trakcie</option>
-            <option value="gotowe">Gotowe do wysyłki</option>
-            <option value="wyslane">Wysłane</option>
+            <option value="w_realizacji">W realizacji</option>
+            <option value="poprawki">Poprawki</option>
+            <option value="do_akceptacji">Oczekuje na akceptację</option>
             <option value="zakonczone">Zakończone</option>
             <option value="anulowane">Anulowane</option>
         </select>
-        <button id="save-status-btn" class="btn btn-primary">Zapisz</button>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="close-modal-btn" style="background: transparent; border: 1px solid var(--panel-border); color: var(--text-light); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Anuluj</button>
+            <button id="save-status-btn" style="background: var(--purple); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Zapisz</button>
+        </div>
     </div>
 </div>
 
@@ -467,5 +518,90 @@
   lucide.createIcons();
 </script>
 <script src="crm.js"></script>
+<!-- Admin Order Details Modal -->
+<div id="admin-order-modal" class="modal" style="display:none; align-items:center; justify-content:center; z-index: 100;">
+    <div class="modal-content" style="max-width: 800px; width: 90%; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: var(--radius-lg); max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; position: relative;">
+
+        <button class="close-modal" id="close-admin-order-modal" style="position:absolute; top:20px; right:20px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i data-lucide="x"></i></button>
+
+        <div style="padding: 30px; border-bottom: 1px solid var(--panel-border);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h2 id="admin-modal-title" style="margin: 0 0 10px 0; font-size: 1.8rem;">Szczegóły zamówienia</h2>
+                    <div style="display: flex; gap: 15px; color: var(--text-muted); font-size: 0.9rem; flex-wrap: wrap;">
+                        <span id="admin-modal-id">#ID</span>
+                        <span id="admin-modal-date"><i data-lucide="calendar" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> </span>
+                        <span id="admin-modal-deadline" style="color: var(--warning);"><i data-lucide="clock" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Termin: </span>
+                    </div>
+                </div>
+                <div id="admin-modal-status-badge">
+                    <!-- Status -->
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-modal-body-grid" style="padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+
+            <!-- Left Column: Client & Config -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+
+                <div class="info-section" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--panel-border);">
+                    <h3 style="margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;"><i data-lucide="user" style="width:18px;height:18px;"></i> Dane klienta</h3>
+                    <div id="admin-modal-client-info" style="font-size: 0.95rem; line-height: 1.6; color: var(--text-main);">
+                        <!-- Client data -->
+                    </div>
+                </div>
+
+                <div class="info-section" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--panel-border);">
+                    <h3 style="margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;"><i data-lucide="shopping-cart" style="width:18px;height:18px;"></i> Produkty i Konfiguracja</h3>
+                    <div id="admin-modal-products" style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- Products -->
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--panel-border); display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem;">
+                        <span>Suma:</span>
+                        <span id="admin-modal-total">0 zł</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Timeline & Notes -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+
+                <div class="info-section" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--panel-border);">
+                    <h3 style="margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;"><i data-lucide="git-commit" style="width:18px;height:18px;"></i> Timeline projektu</h3>
+                    <div id="admin-modal-timeline" class="admin-timeline">
+                        <!-- Timeline -->
+                    </div>
+                </div>
+
+                <div class="info-section" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--panel-border); flex-grow: 1; display: flex; flex-direction: column;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="display: flex; align-items: center; gap: 8px;"><i data-lucide="file-text" style="width:18px;height:18px;"></i> Notatki</span>
+                        <button onclick="addNoteFromModal()" style="background: none; border: 1px solid var(--purple); color: var(--purple); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;">+ Dodaj</button>
+                    </h3>
+                    <div id="admin-modal-notes" style="display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 200px; padding-right: 5px;">
+                        <!-- Notes -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Note Input Modal -->
+<div id="admin-note-modal" class="modal" style="display:none; align-items:center; justify-content:center; z-index: 105;">
+    <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: var(--radius-lg); padding: 30px; position: relative;">
+        <button class="close-modal" id="close-admin-note-modal" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i data-lucide="x"></i></button>
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;"><i data-lucide="edit-3"></i> Dodaj Notatkę</h3>
+        <textarea id="admin-note-input" rows="4" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); color: var(--text-light); padding: 12px; border-radius: var(--radius-sm); font-family: inherit; resize: vertical; margin-bottom: 15px;" placeholder="Wpisz treść notatki..."></textarea>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button onclick="document.getElementById('admin-note-modal').style.display='none'" style="background: transparent; border: 1px solid var(--panel-border); color: var(--text-light); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Anuluj</button>
+            <button onclick="saveNoteFromModal()" style="background: var(--purple); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Zapisz</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

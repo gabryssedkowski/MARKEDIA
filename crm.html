@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Urbanist:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="crm.css">
 </head>
 <body>
@@ -59,8 +61,10 @@
 
         <!-- Sub Header -->
         <div class="sub-header">
-            <a href="admin.html" class="back-btn" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--text-muted);"><i data-lucide="arrow-left"></i></a>
-            <h1 class="page-title">Panel<br>Zarządzania</h1>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <a href="admin.html" class="back-btn" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--text-muted);"><i data-lucide="arrow-left"></i></a>
+                <h1 class="page-title" style="margin: 0; font-weight: 800; line-height: 1.1; font-size: 2.2rem;">Panel<br>Zarządzania</h1>
+            </div>
 
             <div class="stats-row">
                 <div class="stat-item">
@@ -153,12 +157,12 @@
                 </div>
 
 
-                <div class="orders-controls" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; padding: 0 16px;">
+                <div class="orders-controls" style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; padding: 0;">
                     <div style="flex: 1; min-width: 200px; position: relative;">
-                        <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted);"></i>
-                        <input type="text" id="order-search" placeholder="Szukaj zamówienia, klienta..." style="width: 100%; padding: 8px 10px 8px 35px; border-radius: var(--radius-sm); border: 1px solid var(--panel-border); background: rgba(255,255,255,0.05); color: white;">
+                        <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted);"></i>
+                        <input type="text" id="order-search" placeholder="Szukaj zamówienia, klienta..." style="width: 100%; padding: 10px 10px 10px 38px; border-radius: var(--radius-sm); border: 1px solid var(--panel-border); background: #fff; color: var(--ink); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); font-size: 0.9rem;">
                     </div>
-                    <select id="order-sort" style="padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--panel-border); background: #2a2a35; color: white; cursor: pointer;">
+                    <select id="order-sort" style="padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--panel-border); background: #fff; color: var(--ink); cursor: pointer; font-size: 0.9rem; font-weight: 600;">
                         <option value="date-desc">Data: Najnowsze</option>
                         <option value="date-asc">Data: Najstarsze</option>
                         <option value="value-desc">Wartość: Najwyższa</option>
@@ -401,26 +405,26 @@
 </div>
 
 <!-- Modal for Settings -->
-<div id="settings-modal" class="modal" style="display:none;">
-    <div class="modal-content">
-        <span class="close-settings-modal" style="float:right; cursor:pointer; font-size:1.5rem;">&times;</span>
-        <h2>Ustawienia Systemowe</h2>
-        <p style="color:var(--text-muted); margin-bottom: 20px;">Zarządzaj danymi i widokiem systemu CRM.</p>
+<div id="settings-modal" class="modal" style="display:none; align-items:center; justify-content:center; z-index: 105;">
+    <div class="modal-content" style="max-width: 500px; width: 90%;">
+        <button class="close-settings-modal close-modal" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-muted); cursor:pointer;"><i data-lucide="x"></i></button>
+        <h3 style="margin-top:0; margin-bottom: 8px; display:flex; align-items:center; gap:8px;"><i data-lucide="settings"></i> Ustawienia Systemowe</h3>
+        <p style="color:var(--text-muted); margin-bottom: 24px; font-size: 0.9rem;">Zarządzaj danymi i widokiem systemu CRM.</p>
 
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card-light); border-radius: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(0,0,0,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
                 <div>
-                    <strong style="display:block;">Wyczyść historię zamówień</strong>
+                    <strong style="display:block; margin-bottom: 4px; color: var(--text-main);">Wyczyść historię zamówień</strong>
                     <span style="font-size: 0.8rem; color: var(--text-muted);">Trwale usunie wszystkie zamówienia.</span>
                 </div>
-                <button id="clear-orders-btn" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Wyczyść</button>
+                <button id="clear-orders-btn" style="background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: transform 0.2s;">Wyczyść</button>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card-light); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(0,0,0,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
                 <div>
-                    <strong style="display:block;">Zresetuj profil admina</strong>
+                    <strong style="display:block; margin-bottom: 4px; color: var(--text-main);">Zresetuj profil admina</strong>
                     <span style="font-size: 0.8rem; color: var(--text-muted);">Przywróć domyślne dane profilu.</span>
                 </div>
-                <button id="reset-profile-btn" style="background: transparent; color: var(--text-main); border: 1px solid var(--panel-border); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Zresetuj</button>
+                <button id="reset-profile-btn" style="background: transparent; color: var(--text-main); border: 1px solid var(--panel-border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: transform 0.2s;">Zresetuj</button>
             </div>
         </div>
     </div>

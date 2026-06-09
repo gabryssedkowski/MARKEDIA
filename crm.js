@@ -273,11 +273,19 @@ function renderOrders() {
         window.lucide.createIcons();
     }
 
+    // Add staggered animation classes to newly created cards instead of relying fully on GSAP here
+    // though GSAP is still great for entry. Let's combine them or use just GSAP.
     if (window.gsap) {
         gsap.fromTo('.history-card',
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: 'power2.out', clearProps: 'all' }
+            { opacity: 0, y: 30, scale: 0.95 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(1.2)', clearProps: 'transform' }
         );
+    } else {
+        const cards = grid.querySelectorAll('.history-card');
+        cards.forEach((card, i) => {
+            card.style.animationDelay = `${i * 0.05}s`;
+            card.classList.add('stagger-item');
+        });
     }
 }
 
@@ -289,19 +297,19 @@ function initModal() {
 
     if(!modal || !saveBtn) return;
 
-    if (closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
-    if (cancelBtn) cancelBtn.onclick = () => modal.style.display = 'none';
+    const closeModal = () => {
+        modal.classList.remove('is-open');
+        setTimeout(() => modal.style.display = 'none', 300);
+    };
 
-    // Handled in global window listener now
-    // window.onclick = (e) => {
-    //     if (e.target == modal) modal.style.display = 'none';
-    // }
+    if (closeBtn) closeBtn.onclick = closeModal;
+    if (cancelBtn) cancelBtn.onclick = closeModal;
 
     saveBtn.onclick = () => {
         const newStatus = document.getElementById('new-status-select').value;
         if (currentOrderIdForStatus) {
             updateOrderStatus(currentOrderIdForStatus, newStatus);
-            modal.style.display = 'none';
+            closeModal();
             // Also update modal visually if it is open
             if(window.currentAdminModalOrderId === currentOrderIdForStatus) {
                  const order = ordersData.find(o => o.id === currentOrderIdForStatus);
@@ -482,7 +490,9 @@ function initSidebar() {
                     }
                     break;
                 case 'settings':
-                    document.getElementById('settings-modal').style.display = 'flex';
+                    const settingsModal = document.getElementById('settings-modal');
+                    settingsModal.style.display = 'flex';
+                    setTimeout(() => settingsModal.classList.add('is-open'), 10);
                     break;
             }
         });
@@ -510,20 +520,33 @@ function initSidebar() {
 
     const settingsModal = document.getElementById('settings-modal');
     const closeSettings = document.querySelector('.close-settings-modal');
-    if(closeSettings) closeSettings.onclick = () => settingsModal.style.display = 'none';
+    if(closeSettings) closeSettings.onclick = () => {
+        settingsModal.classList.remove('is-open');
+        setTimeout(() => settingsModal.style.display = 'none', 300);
+    }
     document.getElementById('clear-orders-btn')?.addEventListener('click', () => {
         if(confirm('Na pewno chcesz usunąć wszystkie zamówienia?')) {
             localStorage.removeItem('markedia-orders');
             ordersData = [];
             loadOrders();
-            settingsModal.style.display = 'none';
+            settingsModal.classList.remove('is-open');
+            setTimeout(() => settingsModal.style.display = 'none', 300);
         }
     });
     document.getElementById('reset-profile-btn')?.addEventListener('click', () => {
         if(confirm('Zresetować profil admina do domyślnego?')) {
             localStorage.removeItem('crm_admin_profile');
             initAdminProfile();
-            settingsModal.style.display = 'none';
+            settingsModal.classList.remove('is-open');
+            setTimeout(() => settingsModal.style.display = 'none', 300);
+        }
+    });
+
+    // Hide settings modal on outside click
+    window.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            settingsModal.classList.remove('is-open');
+            setTimeout(() => settingsModal.style.display = 'none', 300);
         }
     });
 }
@@ -535,7 +558,10 @@ window.openStatusModal = function(orderId, event) {
     if(order) {
         const select = document.getElementById('new-status-select');
         if(select) select.value = order.status || 'nowe';
-        document.getElementById('status-modal').style.display = 'flex';
+        const modal = document.getElementById('status-modal');
+        modal.style.display = 'flex';
+        // Add timeout to allow display flex to apply before adding class for transition
+        setTimeout(() => modal.classList.add('is-open'), 10);
     }
 }
 
@@ -901,6 +927,7 @@ function openClientModal(order) {
     }
 
     modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('is-open'), 10);
     if (window.lucide) {
         lucide.createIcons();
     }
@@ -1103,7 +1130,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.getElementById('client-close-modal');
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', () => {
-            document.getElementById('client-order-modal').style.display = 'none';
+            const modal = document.getElementById('client-order-modal');
+            modal.classList.remove('is-open');
+            setTimeout(() => modal.style.display = 'none', 300);
         });
     }
 
@@ -1111,7 +1140,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('click', (e) => {
         const modal = document.getElementById('client-order-modal');
         if (e.target === modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('is-open');
+            setTimeout(() => modal.style.display = 'none', 300);
         }
     });
 
@@ -1122,16 +1152,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (acceptBtn) {
         acceptBtn.addEventListener('click', () => {
             alert('Projekt zaakceptowany! Rozpoczynamy przygotowywanie plików finalnych.');
-            // Here you would send a request to backend to update order status to 'zakonczone' or similar
-            document.getElementById('client-order-modal').style.display = 'none';
+            const modal = document.getElementById('client-order-modal');
+            modal.classList.remove('is-open');
+            setTimeout(() => modal.style.display = 'none', 300);
         });
     }
 
     if (rejectBtn) {
         rejectBtn.addEventListener('click', () => {
             alert('Wysłano prośbę o poprawki. Zespół zajmie się nimi wkrótce.');
-            // Here you would send a request to backend to update order status to 'poprawki' or similar
-            document.getElementById('client-order-modal').style.display = 'none';
+            const modal = document.getElementById('client-order-modal');
+            modal.classList.remove('is-open');
+            setTimeout(() => modal.style.display = 'none', 300);
         });
     }
 });
@@ -1145,7 +1177,9 @@ window.openAddNoteModal = function(orderId, event) {
     if(event) event.stopPropagation();
     window.currentAdminModalOrderId = orderId;
     document.getElementById('admin-note-input').value = '';
-    document.getElementById('admin-note-modal').style.display = 'flex';
+    const modal = document.getElementById('admin-note-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('is-open'), 10);
 };
 
 window.confirmDeleteOrder = function(orderId, event) {
@@ -1311,6 +1345,7 @@ window.openOrderDetails = function(orderId, event) {
     window.currentAdminModalOrderId = orderId;
 
     modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('is-open'), 10);
 
     if(window.lucide) {
         lucide.createIcons();
@@ -1345,7 +1380,9 @@ window.addNoteFromModal = function() {
     const orderId = window.currentAdminModalOrderId;
     if(!orderId) return;
     document.getElementById('admin-note-input').value = '';
-    document.getElementById('admin-note-modal').style.display = 'flex';
+    const modal = document.getElementById('admin-note-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('is-open'), 10);
 };
 
 window.saveNoteFromModal = function() {
@@ -1366,31 +1403,36 @@ window.saveNoteFromModal = function() {
             localStorage.setItem('markedia-orders', JSON.stringify(ordersData));
             renderAdminNotes(ordersData[orderIndex]);
             logActivity('note', `Dodano notatkę do zamówienia #${orderId}`);
-            document.getElementById('admin-note-modal').style.display = 'none';
+            closeAdminNoteModal();
         }
     }
 };
 
-document.getElementById('close-admin-order-modal').addEventListener('click', () => {
-    document.getElementById('admin-order-modal').style.display = 'none';
-});
+function closeAdminOrderModal() {
+    const modal = document.getElementById('admin-order-modal');
+    modal.classList.remove('is-open');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
 
-document.getElementById('close-admin-note-modal').addEventListener('click', () => {
-    document.getElementById('admin-note-modal').style.display = 'none';
-});
+function closeAdminNoteModal() {
+    const modal = document.getElementById('admin-note-modal');
+    modal.classList.remove('is-open');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+document.getElementById('close-admin-order-modal').addEventListener('click', closeAdminOrderModal);
+document.getElementById('close-admin-note-modal').addEventListener('click', closeAdminNoteModal);
 
 // Hide on outside click
 window.addEventListener('click', (e) => {
     const adminModal = document.getElementById('admin-order-modal');
     const noteModal = document.getElementById('admin-note-modal');
     const statusModal = document.getElementById('status-modal');
-    if (e.target === adminModal) {
-        adminModal.style.display = 'none';
-    }
-    if (e.target === noteModal) {
-        noteModal.style.display = 'none';
-    }
+
+    if (e.target === adminModal) closeAdminOrderModal();
+    if (e.target === noteModal) closeAdminNoteModal();
     if (e.target === statusModal) {
-        statusModal.style.display = 'none';
+        statusModal.classList.remove('is-open');
+        setTimeout(() => statusModal.style.display = 'none', 300);
     }
 });

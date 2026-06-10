@@ -66,17 +66,49 @@ function updateDashboardStats() {
         return sum + orderTotal;
     }, 0);
     
-    totalRevenueEl.innerHTML = revenue + ' zł <span class="badge positive">Netto</span>';
+
+    let currentRev = parseInt(totalRevenueEl.getAttribute('data-value') || 0);
+    if(window.gsap) {
+        gsap.to({val: currentRev}, {val: revenue, duration: 1, onUpdate: function() {
+            totalRevenueEl.innerHTML = Math.floor(this.targets()[0].val) + ' zł <span class="badge positive">Netto</span>';
+        }});
+        totalRevenueEl.setAttribute('data-value', revenue);
+    } else {
+        totalRevenueEl.innerHTML = revenue + ' zł <span class="badge positive">Netto</span>';
+    }
+
     totalOrdersEl.innerHTML = 'Z ' + ordersData.length + ' zamówień<br>Šącznie';
     
     if (newCustomersEl) {
         document.querySelector('.stat-item:nth-child(2) .stat-desc').innerHTML = 'Nowe zapytania<br>W systemie';
-        newCustomersEl.innerHTML = ordersData.filter(o => o.status === 'nowe').length + ' <span class="badge neutral">Nowe</span>';
+
+        const newCount = ordersData.filter(o => o.status === 'nowe').length;
+        let currentNew = parseInt(newCustomersEl.getAttribute('data-value') || 0);
+        if(window.gsap) {
+            gsap.to({val: currentNew}, {val: newCount, duration: 1, onUpdate: function() {
+                newCustomersEl.innerHTML = Math.floor(this.targets()[0].val) + ' <span class="badge neutral">Nowe</span>';
+            }});
+            newCustomersEl.setAttribute('data-value', newCount);
+        } else {
+            newCustomersEl.innerHTML = newCount + ' <span class="badge neutral">Nowe</span>';
+        }
+
     }
     
     if (newTasksEl) {
         document.querySelector('.stat-item:nth-child(3) .stat-desc').innerHTML = 'Zlecenia<br>W toku';
-        newTasksEl.innerHTML = activeOrders.length + ' <span class="badge positive">W realizacji</span>';
+
+        const activeCount = activeOrders.length;
+        let currentActive = parseInt(newTasksEl.getAttribute('data-value') || 0);
+        if(window.gsap) {
+            gsap.to({val: currentActive}, {val: activeCount, duration: 1, onUpdate: function() {
+                newTasksEl.innerHTML = Math.floor(this.targets()[0].val) + ' <span class="badge positive">W realizacji</span>';
+            }});
+            newTasksEl.setAttribute('data-value', activeCount);
+        } else {
+            newTasksEl.innerHTML = activeCount + ' <span class="badge positive">W realizacji</span>';
+        }
+
     }
 }
 
@@ -129,6 +161,19 @@ function renderOrders() {
     const grid = document.getElementById('orders-grid');
     if (!grid) return;
 
+    // Add skeletons before real data
+    grid.innerHTML = Array(6).fill(0).map(() => `
+        <div class="history-card skeleton-card">
+            <div class="skeleton skeleton-text" style="width: 40%;"></div>
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text" style="width: 60%;"></div>
+            <div class="skeleton skeleton-amount"></div>
+        </div>
+    `).join('');
+
+    setTimeout(() => {
+
     // Add brief loading state to show interactivity, especially if sorting/filtering
     grid.style.opacity = '0.5';
     setTimeout(() => {
@@ -154,8 +199,8 @@ function renderOrders() {
     if (localOrderSort) {
         const sortMode = localOrderSort.value;
         filteredOrders.sort((a, b) => {
-            const dateA = new Date(a.createdAt || a.date || 0);
-            const dateB = new Date(b.createdAt || b.date || 0);
+            const dateA = new Date(a.createdAt || a.date || new Date().toISOString());
+            const dateB = new Date(b.createdAt || b.date || new Date().toISOString());
             const valA = a.price || (a.items && a.items.length ? a.items.reduce((s, i) => s + (i.price || 0)*(i.quantity || 1), 0) : 0);
             const valB = b.price || (b.items && b.items.length ? b.items.reduce((s, i) => s + (i.price || 0)*(i.quantity || 1), 0) : 0);
 
@@ -170,7 +215,7 @@ function renderOrders() {
         });
     } else {
         // default sorting by date desc
-        filteredOrders.sort((a, b) => new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0));
+        filteredOrders.sort((a, b) => new Date(b.createdAt || b.date || new Date().toISOString()) - new Date(a.createdAt || a.date || new Date().toISOString()));
     }
 
     if (filteredOrders.length === 0) {
@@ -187,7 +232,7 @@ function renderOrders() {
 
     const cardColors = ['blue', 'teal', 'black', 'yellow', 'bg-light'];
 
-    grid.innerHTML = filteredOrders.map((order, index) => {
+            grid.innerHTML = filteredOrders.map((order, index) => {
         const orderDateStr = order.createdAt || order.date || new Date().toISOString();
         const date = new Date(orderDateStr).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -275,18 +320,19 @@ function renderOrders() {
 
     // Add staggered animation classes to newly created cards instead of relying fully on GSAP here
     // though GSAP is still great for entry. Let's combine them or use just GSAP.
-    if (window.gsap) {
-        gsap.fromTo('.history-card',
-            { opacity: 0, y: 30, scale: 0.95 },
-            { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(1.2)', clearProps: 'transform' }
-        );
-    } else {
-        const cards = grid.querySelectorAll('.history-card');
-        cards.forEach((card, i) => {
-            card.style.animationDelay = `${i * 0.05}s`;
-            card.classList.add('stagger-item');
-        });
-    }
+        if (window.gsap) {
+            gsap.fromTo('.history-card',
+                { opacity: 0, y: 30, scale: 0.95 },
+                { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(1.2)', clearProps: 'transform' }
+            );
+        } else {
+            const cards = grid.querySelectorAll('.history-card');
+            cards.forEach((card, i) => {
+                card.style.animationDelay = `${i * 0.05}s`;
+                card.classList.add('stagger-item');
+            });
+        }
+    }, 400); // end of skeleton timeout
 }
 
 function initModal() {
@@ -351,6 +397,9 @@ function initSidebar() {
     const historyTitle = document.querySelector('.interaction-history .panel-header h2');
 
     function toggleFullView(isActive, type) {
+        if(window.gsap) {
+            gsap.fromTo('.dashboard-grid', {opacity: 0, y: 10}, {opacity: 1, y: 0, duration: 0.4, ease: 'power2.out'});
+        }
         const clientOrdersView = document.getElementById('client-orders-view');
         if (clientOrdersView) {
             clientOrdersView.style.display = 'none';
@@ -461,34 +510,53 @@ function initSidebar() {
                     downloadAnchorNode.remove();
                     break;
                 case 'view-grid':
+                    if(window.gsap) {
+                        gsap.to('#client-orders-view', {opacity: 0, y: -10, duration: 0.2, ease: 'power2.in', onComplete: () => {
+                            const clientOrdersViewGrid = document.getElementById('client-orders-view');
+                            if (clientOrdersViewGrid) clientOrdersViewGrid.style.display = 'none';
+                            document.querySelector('.dashboard-grid').style.display = 'grid';
+                            document.querySelector('.sub-header').style.display = 'flex';
+                            gsap.fromTo('.dashboard-grid, .sub-header', {opacity: 0, y: 10}, {opacity: 1, y: 0, duration: 0.4, ease: 'power2.out'});
+                            renderOrders();
+                        }});
+                    } else {
+                        const clientOrdersViewGrid = document.getElementById('client-orders-view');
+                        if (clientOrdersViewGrid) clientOrdersViewGrid.style.display = 'none';
+                        document.querySelector('.dashboard-grid').style.display = 'grid';
+                        document.querySelector('.sub-header').style.display = 'flex';
+                        renderOrders();
+                    }
                     layoutMode = 'grid';
                     grid.classList.remove('list-view');
-
-                    const clientOrdersViewGrid = document.getElementById('client-orders-view');
-                    if (clientOrdersViewGrid) {
-                        clientOrdersViewGrid.style.display = 'none';
-                    }
-                    document.querySelector('.dashboard-grid').style.display = 'grid';
-                    document.querySelector('.sub-header').style.display = 'flex';
-
-                    renderOrders();
                     break;
+
                 case 'view-list':
                     const clientOrdersView = document.getElementById('client-orders-view');
                     const dashboardGridEl = document.querySelector('.dashboard-grid');
                     const subHeaderEl = document.querySelector('.sub-header');
 
                     if (clientOrdersView) {
-                        dashboardGridEl.style.display = 'none';
-                        subHeaderEl.style.display = 'none';
-                        clientOrdersView.style.display = 'block';
-
-                        // Initial render of client panel
-                        if (typeof renderClientOrders === 'function') {
-                            renderClientOrders();
+                        if(window.gsap) {
+                            gsap.to('.dashboard-grid, .sub-header', {opacity: 0, y: -10, duration: 0.2, ease: 'power2.in', onComplete: () => {
+                                dashboardGridEl.style.display = 'none';
+                                subHeaderEl.style.display = 'none';
+                                clientOrdersView.style.display = 'block';
+                                gsap.fromTo('#client-orders-view', {opacity: 0, y: 10}, {opacity: 1, y: 0, duration: 0.4, ease: 'power2.out'});
+                                if (typeof renderClientOrders === 'function') {
+                                    renderClientOrders();
+                                }
+                            }});
+                        } else {
+                            dashboardGridEl.style.display = 'none';
+                            subHeaderEl.style.display = 'none';
+                            clientOrdersView.style.display = 'block';
+                            if (typeof renderClientOrders === 'function') {
+                                renderClientOrders();
+                            }
                         }
                     }
                     break;
+
                 case 'settings':
                     const settingsModal = document.getElementById('settings-modal');
                     settingsModal.style.display = 'flex';
@@ -669,7 +737,17 @@ function updateFunnelStats() {
     
     const total = vNowe + vWTrakcie + vZakonczone;
     
-    totalPipelineEl.innerHTML = `${total} zł`;
+
+    let currentTotal = parseInt(totalPipelineEl.getAttribute('data-value') || 0);
+    if(window.gsap) {
+        gsap.to({val: currentTotal}, {val: total, duration: 1, onUpdate: function() {
+            totalPipelineEl.innerHTML = Math.floor(this.targets()[0].val) + ' zł';
+        }});
+        totalPipelineEl.setAttribute('data-value', total);
+    } else {
+        totalPipelineEl.innerHTML = `${total} zł`;
+    }
+
     
     const stagesContainer = document.querySelector('.funnel-stages');
     if(stagesContainer) {
@@ -832,11 +910,11 @@ function renderClientOrders() {
                 <div class="client-card-details">
                     <div class="client-detail-item">
                         <span class="client-detail-label">Data zamówienia</span>
-                        <span class="client-detail-value">${new Date(order.date).toLocaleDateString('pl-PL')}</span>
+                        <span class="client-detail-value">${new Date(order.createdAt || order.date || new Date().toISOString()).toLocaleDateString('pl-PL')}</span>
                     </div>
                     <div class="client-detail-item" style="text-align: right;">
                         <span class="client-detail-label">Wartość</span>
-                        <span class="client-detail-value">${price}$</span>
+                        <span class="client-detail-value">${price} zł</span>
                     </div>
                 </div>
                 ${getProgressSteps(order.status)}
@@ -861,7 +939,7 @@ function openClientModal(order) {
 
     document.getElementById('modal-client-title').innerText = orderTitle;
     document.getElementById('modal-client-id').innerText = `Zamówienie #${order.id}`;
-    document.getElementById('modal-client-date').innerText = new Date(order.date).toLocaleDateString('pl-PL');
+    document.getElementById('modal-client-date').innerText = new Date(order.createdAt || order.date || new Date().toISOString()).toLocaleDateString('pl-PL');
     document.getElementById('modal-client-price').innerText = price + ' zł';
 
     const thumbContainer = document.getElementById('modal-client-thumb');
@@ -1369,7 +1447,7 @@ function renderAdminNotes(order) {
         <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: var(--radius-sm); border-left: 2px solid var(--purple);">
             <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; display: flex; justify-content: space-between;">
                 <span>Administrator</span>
-                <span>${new Date(note.date).toLocaleString('pl-PL')}</span>
+                <span>${new Date(note.createdAt || note.date || new Date().toISOString()).toLocaleString('pl-PL')}</span>
             </div>
             <div style="font-size: 0.95rem; line-height: 1.4;">${escapeHTML(note.text)}</div>
         </div>

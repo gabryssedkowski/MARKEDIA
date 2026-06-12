@@ -1,3 +1,46 @@
+
+function crmShowToast(message, type='info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.position = 'fixed';
+        container.style.bottom = '20px';
+        container.style.right = '20px';
+        container.style.zIndex = '9999';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '10px';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.background = type === 'success' ? 'var(--success, #10b981)' : 'var(--panel-border, #333)';
+    toast.style.color = '#fff';
+    toast.style.padding = '12px 24px';
+    toast.style.borderRadius = '8px';
+    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
+    toast.style.transition = 'all 0.3s ease';
+    toast.innerText = message;
+
+    container.appendChild(toast);
+
+    // Animate in
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+
+    // Animate out
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 // Security Helper
 function escapeHTML(str) {
     if (typeof str !== 'string') return str;
@@ -684,6 +727,136 @@ function initAdminProfile() {
 
     renderProfile();
 
+    // --- Custom Modal Logic ---
+    const customModal = document.getElementById('crm-custom-modal');
+    const customModalClose = document.getElementById('crm-modal-close');
+    const customModalCancel = document.getElementById('crm-modal-cancel');
+    const customModalSave = document.getElementById('crm-modal-save');
+    const customModalTitle = document.getElementById('crm-modal-title');
+    const customModalInputs = document.getElementById('crm-modal-inputs');
+
+    let currentSaveCallback = null;
+
+    function openCustomModal(title, fields, saveCallback) {
+        if (!customModal) return;
+        customModalTitle.textContent = title;
+        customModalInputs.innerHTML = '';
+
+        fields.forEach(field => {
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.flexDirection = 'column';
+            wrapper.style.gap = '8px';
+
+            const label = document.createElement('label');
+            label.textContent = field.label;
+            label.style.color = 'var(--text-muted)';
+            label.style.fontSize = '0.9rem';
+
+            let input;
+            if (field.type === 'textarea') {
+                input = document.createElement('textarea');
+                input.style.minHeight = '100px';
+                input.style.resize = 'vertical';
+            } else {
+                input = document.createElement('input');
+                input.type = field.type || 'text';
+            }
+
+            input.id = field.id;
+            input.value = field.value || '';
+            input.style.padding = '12px';
+            input.style.background = 'var(--panel-bg)';
+            input.style.border = '1px solid var(--panel-border)';
+            input.style.borderRadius = '8px';
+            input.style.color = 'var(--text-main)';
+            input.style.width = '100%';
+
+            wrapper.appendChild(label);
+            wrapper.appendChild(input);
+            customModalInputs.appendChild(wrapper);
+        });
+
+        currentSaveCallback = saveCallback;
+        customModal.style.display = 'flex'; customModal.classList.add('is-open');
+    }
+
+    function closeCustomModal() {
+        if (customModal) { customModal.style.display = 'none'; customModal.classList.remove('is-open'); }
+        currentSaveCallback = null;
+    }
+
+    if (customModalClose) customModalClose.addEventListener('click', closeCustomModal);
+    if (customModalCancel) customModalCancel.addEventListener('click', closeCustomModal);
+    if (customModalSave) {
+        customModalSave.addEventListener('click', () => {
+            if (currentSaveCallback) {
+                const results = {};
+                const inputs = customModalInputs.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    results[input.id] = input.value;
+                });
+                currentSaveCallback(results);
+            }
+            closeCustomModal();
+        });
+    }
+
+    // --- Profile Actions ---
+    document.getElementById('pa-message')?.addEventListener('click', () => {
+        openCustomModal('Napisz wiadomość', [
+            { id: 'msg_subject', label: 'Temat', type: 'text', value: '' },
+            { id: 'msg_body', label: 'Treść wiadomości', type: 'textarea', value: '' }
+        ], (data) => {
+            if(data.msg_body) {
+                crmShowToast('Wiadomość wysłana pomyślnie!', 'success');
+                logActivity('info', 'Wysłano nową wiadomość z profilu');
+            }
+        });
+    });
+
+    document.getElementById('pa-mail')?.addEventListener('click', () => {
+        window.location.href = `mailto:${profile.email}`;
+    });
+
+    document.getElementById('pa-phone')?.addEventListener('click', () => {
+        window.location.href = `tel:${profile.phone.replace(/[^0-9+]/g, '')}`;
+    });
+
+
+    document.getElementById('pa-add')?.addEventListener('click', () => {
+        openCustomModal('Szybka akcja', [
+            { id: 'action_type', label: 'Typ akcji', type: 'text', value: 'Notatka (np. Notatka, Zadanie, Przypomnienie, Plik)' },
+            { id: 'action_content', label: 'Treść', type: 'textarea', value: '' }
+        ], (data) => {
+            if(data.action_content) {
+                crmShowToast('Akcja dodana pomyślnie!', 'success');
+                logActivity('info', 'Dodano: ' + data.action_type);
+            }
+        });
+    });
+
+    document.getElementById('pa-camera')?.addEventListener('click', () => {
+        document.getElementById('avatar-upload')?.click();
+    });
+
+
+    document.getElementById('pa-calendar')?.addEventListener('click', () => {
+        openCustomModal('Nowe spotkanie', [
+            { id: 'cal_title', label: 'Tytuł spotkania', type: 'text', value: '' },
+            { id: 'cal_date', label: 'Data', type: 'text', value: new Date().toLocaleDateString() },
+            { id: 'cal_desc', label: 'Opis', type: 'textarea', value: '' }
+        ], (data) => {
+            if(data.cal_title) {
+                crmShowToast('Spotkanie dodane do kalendarza!', 'success');
+                logActivity('info', 'Dodano spotkanie: ' + data.cal_title);
+            }
+        });
+    });
+
+    });
+
+
     // Avatar upload
     const avatarInput = document.getElementById('avatar-upload');
     if (avatarInput) {
@@ -701,20 +874,114 @@ function initAdminProfile() {
         });
     }
 
-    // Edit info dummy
-    const editBtn = document.getElementById('edit-admin-info-btn');
-    if(editBtn) {
-        editBtn.addEventListener('click', () => {
-            const newFirstName = prompt("Podaj nowe imię:", profile.firstName);
-            if(newFirstName !== null) {
-                profile.firstName = newFirstName;
+
+    // --- Edit Fields Logic ---
+    document.getElementById('edit-first-name')?.addEventListener('click', () => {
+        openCustomModal('Edytuj imię', [
+            { id: 'new_first_name', label: 'Imię', type: 'text', value: profile.firstName }
+        ], (data) => {
+            if(data.new_first_name) {
+                profile.firstName = data.new_first_name;
                 profile.name = `${profile.firstName} ${profile.lastName}`;
                 localStorage.setItem('crm_admin_profile', JSON.stringify(profile));
-                logActivity('info', 'Zaktualizowano profil administratora');
                 renderProfile();
+                crmShowToast('Zaktualizowano imię', 'success');
             }
         });
-    }
+    });
+
+    document.getElementById('edit-last-name')?.addEventListener('click', () => {
+        openCustomModal('Edytuj nazwisko', [
+            { id: 'new_last_name', label: 'Nazwisko', type: 'text', value: profile.lastName }
+        ], (data) => {
+            if(data.new_last_name) {
+                profile.lastName = data.new_last_name;
+                profile.name = `${profile.firstName} ${profile.lastName}`;
+                localStorage.setItem('crm_admin_profile', JSON.stringify(profile));
+                renderProfile();
+                crmShowToast('Zaktualizowano nazwisko', 'success');
+            }
+        });
+    });
+
+    document.getElementById('edit-email')?.addEventListener('click', () => {
+        openCustomModal('Edytuj email', [
+            { id: 'new_email', label: 'Email', type: 'email', value: profile.email }
+        ], (data) => {
+            if(data.new_email) {
+                profile.email = data.new_email;
+                localStorage.setItem('crm_admin_profile', JSON.stringify(profile));
+                renderProfile();
+                crmShowToast('Zaktualizowano email', 'success');
+            }
+        });
+    });
+
+    document.getElementById('edit-phone')?.addEventListener('click', () => {
+        openCustomModal('Edytuj numer telefonu', [
+            { id: 'new_phone', label: 'Telefon', type: 'text', value: profile.phone }
+        ], (data) => {
+            if(data.new_phone) {
+                profile.phone = data.new_phone;
+                localStorage.setItem('crm_admin_profile', JSON.stringify(profile));
+                renderProfile();
+                crmShowToast('Zaktualizowano telefon', 'success');
+            }
+        });
+    });
+
+    document.getElementById('edit-admin-info-btn')?.addEventListener('click', () => {
+        openCustomModal('Edytuj pełny profil', [
+            { id: 'edit_all_first', label: 'Imię', type: 'text', value: profile.firstName },
+            { id: 'edit_all_last', label: 'Nazwisko', type: 'text', value: profile.lastName },
+            { id: 'edit_all_email', label: 'Email', type: 'email', value: profile.email },
+            { id: 'edit_all_phone', label: 'Telefon', type: 'text', value: profile.phone },
+            { id: 'edit_all_title', label: 'Stanowisko / Firma', type: 'textarea', value: profile.title }
+        ], (data) => {
+            if(data.edit_all_first) profile.firstName = data.edit_all_first;
+            if(data.edit_all_last) profile.lastName = data.edit_all_last;
+            profile.name = `${profile.firstName} ${profile.lastName}`;
+            if(data.edit_all_email) profile.email = data.edit_all_email;
+            if(data.edit_all_phone) profile.phone = data.edit_all_phone;
+            if(data.edit_all_title) profile.title = data.edit_all_title;
+
+            localStorage.setItem('crm_admin_profile', JSON.stringify(profile));
+            renderProfile();
+            crmShowToast('Zaktualizowano profil', 'success');
+            logActivity('info', 'Zaktualizowano profil administratora');
+        });
+
+    // --- Add/Expand Fields Logic ---
+    document.getElementById('add-email')?.addEventListener('click', () => {
+        openCustomModal('Dodaj dodatkowy email', [
+            { id: 'extra_email', label: 'Nowy Email', type: 'email', value: '' }
+        ], (data) => {
+            if(data.extra_email) {
+                // In a real app we'd append to an array. Here we'll just append it to the text
+                // or handle it in the UI since the current design is a single string field.
+                profile.email = profile.email + ', ' + data.extra_email;
+                localStorage.setItem('crm_admin_profile', JSON.stringify(profile));
+                renderProfile();
+                crmShowToast('Dodano email', 'success');
+            }
+        });
+    });
+
+    document.getElementById('add-phone')?.addEventListener('click', () => {
+        openCustomModal('Dodaj dodatkowy telefon', [
+            { id: 'extra_phone', label: 'Nowy Telefon', type: 'text', value: '' }
+        ], (data) => {
+            if(data.extra_phone) {
+                profile.phone = profile.phone + ', ' + data.extra_phone;
+                localStorage.setItem('crm_admin_profile', JSON.stringify(profile));
+                renderProfile();
+                crmShowToast('Dodano telefon', 'success');
+            }
+        });
+    });
+    });
+
+
 }
 
 function updateFunnelStats() {

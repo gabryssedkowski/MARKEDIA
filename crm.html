@@ -198,19 +198,19 @@
                     <p class="profile-title" id="admin-title-text">CEO, Inc. Alabama Machinery<br>& Supply</p>
                 </div>
 
-                <div class="profile-actions">
-                    <button><i data-lucide="message-square"></i></button>
-                    <button><i data-lucide="mail"></i></button>
-                    <button><i data-lucide="phone"></i></button>
-                    <button><i data-lucide="plus"></i></button>
-                    <button><i data-lucide="camera"></i></button>
-                    <button><i data-lucide="calendar"></i></button>
+                <div class="profile-actions" id="admin-profile-actions">
+                    <button id="pa-message"><i data-lucide="message-square"></i></button>
+                    <button id="pa-mail"><i data-lucide="mail"></i></button>
+                    <button id="pa-phone"><i data-lucide="phone"></i></button>
+                    <button id="pa-add"><i data-lucide="plus"></i></button>
+                    <button id="pa-camera"><i data-lucide="camera"></i></button>
+                    <button id="pa-calendar"><i data-lucide="calendar"></i></button>
                 </div>
 
                 <div class="panel-header" style="margin-top: 2rem;">
                     <h2>Detailed Information</h2>
                     <div class="panel-actions">
-                        <button id="edit-admin-info-btn"><i data-lucide="edit-2"></i></button>
+                        <button id="edit-admin-info-btn" title="Edytuj profil"><i data-lucide="edit-2"></i></button>
                         <button><i data-lucide="maximize-2"></i></button>
                     </div>
                 </div>
@@ -222,7 +222,7 @@
                             <label>First Name</label>
                             <span id="admin-first-name">Eva</span>
                         </div>
-                        <button class="edit-field-btn"><i data-lucide="edit-2"></i></button>
+                        <button class="edit-field-btn" id="edit-first-name"><i data-lucide="edit-2"></i></button>
                     </div>
                     <div class="info-item">
                         <i data-lucide="user"></i>
@@ -230,7 +230,7 @@
                             <label>Last Name</label>
                             <span id="admin-last-name">Robinson</span>
                         </div>
-                        <button class="edit-field-btn"><i data-lucide="edit-2"></i></button>
+                        <button class="edit-field-btn" id="edit-last-name"><i data-lucide="edit-2"></i></button>
                     </div>
                     <div class="info-item">
                         <i data-lucide="mail"></i>
@@ -238,7 +238,7 @@
                             <label>Email</label>
                             <span id="admin-email">Evao@alabamamachinery.com</span>
                         </div>
-                        <button class="add-field-btn"><i data-lucide="plus"></i></button>
+                        <button class="edit-field-btn" id="edit-email" style="margin-right: 4px;"><i data-lucide="edit-2"></i></button><button class="add-field-btn" id="add-email"><i data-lucide="plus"></i></button>
                     </div>
                      <div class="info-item">
                         <i data-lucide="phone"></i>
@@ -246,7 +246,7 @@
                             <label>Phone Number</label>
                             <span id="admin-phone">+911 120 222 313</span>
                         </div>
-                        <button class="add-field-btn"><i data-lucide="plus"></i></button>
+                        <button class="edit-field-btn" id="edit-phone" style="margin-right: 4px;"><i data-lucide="edit-2"></i></button><button class="add-field-btn" id="add-phone"><i data-lucide="plus"></i></button>
                     </div>
                 </div>
             </section>
@@ -600,6 +600,26 @@
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
             <button onclick="document.getElementById('admin-note-modal').style.display='none'" style="background: transparent; border: 1px solid var(--panel-border); color: var(--text-light); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Anuluj</button>
             <button onclick="saveNoteFromModal()" style="background: var(--purple); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Zapisz</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Custom Modal for CRM -->
+<div id="crm-custom-modal" class="modal" style="display:none; align-items:center; justify-content:center;">
+    <div class="client-modal-content" style="max-width: 400px;">
+        <button class="client-modal-close" id="crm-modal-close" style="position:absolute; top:20px; right:20px; background:none; border:none; color:white; cursor:pointer;"><i data-lucide="x" style="width:24px;height:24px;"></i></button>
+        <div class="client-modal-header">
+            <h2 id="crm-modal-title" style="margin: 0; font-size: 1.5rem;">Edit Field</h2>
+        </div>
+        <div class="client-modal-body" style="padding: 24px;">
+            <div id="crm-modal-inputs" style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- Inputs injected here -->
+            </div>
+            <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="crm-modal-cancel" class="client-btn-secondary">Cancel</button>
+                <button id="crm-modal-save" class="client-btn-primary">Save</button>
+            </div>
         </div>
     </div>
 </div>
